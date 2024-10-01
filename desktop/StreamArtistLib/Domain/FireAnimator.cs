@@ -10,15 +10,16 @@ namespace StreamArtist.Domain
     {
         public override List<RendererRequest> Animate(List<ChatMessage> chats)
         {
-            // What do we want the animator to render?
-            // Fire size, amount and name.
             var list = new List<RendererRequest>();
             foreach(ChatMessage chat in chats) {
+                int MultiplierFactor = (int)Math.Ceiling(chat.USDAmount / 5);
                 var renderer = new FireRendererRequest {
                     Amount = chat.Amount,
+                    DisplayAmount = chat.DisplayAmount,
                     Size = /*chat.Amount **/ 2,
+                    TTL = MultiplierFactor * 10,
+                    Num = MultiplierFactor,
                     Name = chat.AuthorName
-
                 };
                 list.Add(renderer);
             }
@@ -29,11 +30,18 @@ namespace StreamArtist.Domain
 
     public class FireRendererRequest : RendererRequest
     {
-        public string Amount { get; set; }
+        public double Amount { get; set; }
+
+        public string DisplayAmount {get;set;}
 
         public int Size { get; set; }
 
+        public int Num {get;set;}
+
+        public int TTL { get; set; }
+
         public string Name { get; set; }
+        public string Message { get; set; }
     }
 
 }

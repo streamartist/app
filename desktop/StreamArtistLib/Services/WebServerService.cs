@@ -15,6 +15,18 @@ public class WebServerService
     private const int Port = 42984;
     
     private WatsonWebserver.Server? _server;
+
+    public string HealthCheckUrl {
+        get {
+            return $"http://localhost:{Port}/health";
+        }
+    }
+
+    public string UpdateAnimationsUrl {
+        get {
+            return $"http://localhost:{Port}/update";
+        }
+    }
     
     public void StartLocalServer()
     {
@@ -31,8 +43,24 @@ public class WebServerService
 
     private async Task Serve(HttpContext context)
     {
+        Console.WriteLine("Requested: " + context.Request.RawUrlWithQuery);
         if (context.Request.RawUrlWithoutQuery.StartsWith("/update")) {
             await context.Response.Send(await UpdateAnimations());
+            return;
+        }
+
+        if (context.Request.RawUrlWithoutQuery.StartsWith("/health")) {
+            await context.Response.Send(await HealthCheck());
+            return;
+        }
+
+        if (context.Request.RawUrlWithoutQuery.StartsWith("/donate")) {
+            await context.Response.Send( Donate(context.Request));
+            return;
+        }
+
+        if (context.Request.RawUrlWithoutQuery.StartsWith("/files")) {
+            await context.Response.Send(await GetFile(context.Request));
             return;
         }
 
@@ -41,6 +69,26 @@ public class WebServerService
         using var reader = new StreamReader(stream);
         var contents = reader.ReadToEnd();
         await context.Response.Send(contents);
+    }
+
+    private async Task<string> GetFile(HttpRequest request) {
+        var p = System.Web.HttpUtility.ParseQueryString(request.FullUrl.Split('?')[1]);
+        string file = p["file"];
+        if (file == null) {
+            return "";
+        }
+        using var stream = await FileSystem.OpenAppPackageFileAsync(file);
+        using var reader = new StreamReader(stream);
+        var contents = reader.ReadToEnd();
+        return contents;
+    }
+
+    private string Donate(HttpRequest request) {
+        return "";
+    }
+
+    private async Task<string> HealthCheck() {
+        return "{\"effects-server-status\": \"ok\"}";
     }
 
     private async Task<string> UpdateAnimations() {

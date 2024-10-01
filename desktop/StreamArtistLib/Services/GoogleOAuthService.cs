@@ -28,13 +28,8 @@ public class GoogleOAuthService
         _authorizationCodeTask = new TaskCompletionSource<string>();
         StartLocalServer();
 
-        string authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={ClientId}&redirect_uri={RedirectUri}&response_type=code&scope={Scope}";
+        string authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={ClientId}&redirect_uri={RedirectUri}&response_type=code&scope={Scope}&access_type=offline";
         await Browser.OpenAsync(authorizationUrl, BrowserLaunchMode.SystemPreferred);
-
-        //string authorizationCode = await _authorizationCodeTask.Task;
-        // StopLocalServer();
-
-        //return await ExchangeCodeForTokenAsync(authorizationCode);
     }
 
     private void StartLocalServer()
@@ -76,51 +71,85 @@ public class GoogleOAuthService
         AuthComplete?.Invoke(this, EventArgs.Empty);
     }
 
-    public async Task<string> GetAccessToken() {
-        var SettingsService = new SettingsService();
-        var AccessToken = SettingsService.GetGoogleAccessToken();
-        var Expiry = SettingsService.GetGoogleAccessTokenExpiry();
-
-        if (!SettingsService.HasGoogleAccessTokenExpired()) {
-            return AccessToken; 
+    public async Task<string> GetAccessToken()
+    {
+        if (!_settingsService.HasGoogleAccessTokenExpired())
+        {
+            return _settingsService.GetGoogleAccessToken();
         }
 
-        return await ExchangeCodeForTokenAsync(); 
+        var refreshedToken = await RefreshAccessTokenAsync();
+        return refreshedToken ?? await ExchangeCodeForTokenAsync();
+    }
+
+    private readonly SettingsService _settingsService;
+    private readonly HttpClient _httpClient;
+
+    public GoogleOAuthService()
+    {
+        _settingsService = new SettingsService();
+        _httpClient = new HttpClient();
+    }
+
+    private async Task<string> RefreshAccessTokenAsync()
+    {
+        string RefreshToken = _settingsService.GetGoogleRefreshToken();
+
+        if (string.IsNullOrEmpty(RefreshToken))
+        {
+            return null;
+        }
+
+        var Content = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("client_id", ClientId),
+            new KeyValuePair<string, string>("refresh_token", RefreshToken),
+            new KeyValuePair<string, string>("grant_type", "refresh_token")
+        });
+
+        return await SendTokenRequestAsync(Content);
     }
 
     private async Task<string> ExchangeCodeForTokenAsync()
     {
-        var settingsService = new SettingsService();
-        string code = settingsService.GetGoogleOAuthToken();
-        using (var client = new HttpClient())
+        string Code = _settingsService.GetGoogleOAuthToken();
+        var Content = new FormUrlEncodedContent(new[]
         {
-            var content = new FormUrlEncodedContent(new[] 
-            {
-                new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("client_id", ClientId),
-                new KeyValuePair<string, string>("redirect_uri", RedirectUri),
-                new KeyValuePair<string, string>("grant_type", "authorization_code")
-            });
+            new KeyValuePair<string, string>("code", Code),
+            new KeyValuePair<string, string>("client_id", ClientId),
+            new KeyValuePair<string, string>("redirect_uri", RedirectUri),
+            new KeyValuePair<string, string>("grant_type", "authorization_code")
+        });
 
-            var response = await client.PostAsync("https://us-central1-cloud-stream-431915.cloudfunctions.net/artist-connect", content);
-            var responseString = await response.Content.ReadAsStringAsync();
+        return await SendTokenRequestAsync(Content);
+    }
 
-            var jsonDocument = JsonDocument.Parse(responseString);
-            
-            // Check for error field in the response
-            if (jsonDocument.RootElement.TryGetProperty("error", out var error))
-            {
-                Console.WriteLine($"Couldn't get access token ${error.GetString()}");
-                throw new GoogleAccessTokenException(error.GetString());
-            }
+    private async Task<string> SendTokenRequestAsync(FormUrlEncodedContent Content)
+    {
+        var Response = await _httpClient.PostAsync("https://us-central1-cloud-stream-431915.cloudfunctions.net/artist-connect", Content);
+        var ResponseString = await Response.Content.ReadAsStringAsync();
 
-            var expiryInSeconds = jsonDocument.RootElement.GetProperty("expires_in").GetInt32();
-            var expiry = DateTime.Now.AddSeconds(expiryInSeconds);
-            var accessToken = jsonDocument.RootElement.GetProperty("access_token").GetString();
-            
-            settingsService.SetGoogleAccessTokenExpiry(expiry);
-            settingsService.SetGoogleAccessToken(accessToken);
-            return accessToken;
+        var jsonDocument = JsonDocument.Parse(ResponseString);
+
+        if (jsonDocument.RootElement.TryGetProperty("error", out var Error))
+        {
+            Console.WriteLine($"Couldn't get access token: {Error.GetString()}");
+            throw new GoogleAccessTokenException(Error.GetString());
         }
+
+        var ExpiryInSeconds = jsonDocument.RootElement.GetProperty("expires_in").GetInt32();
+        var Expiry = DateTime.Now.AddSeconds(ExpiryInSeconds);
+        var AccessToken = jsonDocument.RootElement.GetProperty("access_token").GetString();
+
+        _settingsService.SetGoogleAccessTokenExpiry(Expiry);
+        _settingsService.SetGoogleAccessToken(AccessToken);
+
+        if (jsonDocument.RootElement.TryGetProperty("refresh_token", out var RefreshTokenElement))
+        {
+            var RefreshToken = RefreshTokenElement.GetString();
+            _settingsService.SetGoogleRefreshToken(RefreshToken);
+        }
+
+        return AccessToken;
     }
 }}

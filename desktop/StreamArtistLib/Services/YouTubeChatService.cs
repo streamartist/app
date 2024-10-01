@@ -6,6 +6,7 @@ using StreamArtist.Domain;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using StreamArtist.Repositories;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -99,6 +100,7 @@ namespace StreamArtist.Services
 
         public async Task<List<ChatMessage>> GetNewChatMessages(string videoId)
         {
+            // TODO: what is this for?
             if (string.IsNullOrEmpty(_liveChatId))
             {
                 await SetLiveChatId(videoId);
@@ -114,6 +116,7 @@ namespace StreamArtist.Services
             try
             {
                 var response = await request.ExecuteAsync();
+                CurrencyConverter currencyConverter = new CurrencyConverter();
                 foreach (var message in response.Items)
                 {
                     chatMessages.Add(new ChatMessage
@@ -121,7 +124,9 @@ namespace StreamArtist.Services
                         AuthorName = message.AuthorDetails.DisplayName,
                         Message = message.Snippet.DisplayMessage,
                         IsSuperChat = message.Snippet.Type == "superChatEvent",
-                        Amount = message.Snippet.SuperChatDetails?.AmountDisplayString
+                        Amount = (double) message.Snippet.SuperChatDetails?.AmountMicros/1000000,
+                        DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
+                        USDAmount = currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency,(double) message.Snippet.SuperChatDetails?.AmountMicros/1000000)
                     });
                 }
 
@@ -133,7 +138,14 @@ namespace StreamArtist.Services
                 Console.WriteLine($"Error fetching chat messages: {ex.Message}");
             }
 
+            // Add local chat messages
+            chatMessages.AddRange(LocalChatRepository.Instance.GetAndRemoveAllChats());
+
             return chatMessages;
+        }
+
+        public async Task<List<ChatMessage>> GetNewLocalChatMessages() {
+            return LocalChatRepository.Instance.GetAndRemoveAllChats();
         }
 
         private void LoadState()
@@ -206,6 +218,21 @@ namespace StreamArtist.Services
             }
 
             return liveStreams;
+        }
+
+        public void AddLocalChatMessage(string authorName, string message, bool isSuperChat = false, double amount = 0)
+        {
+            var ChatMessage = new ChatMessage
+            {
+                AuthorName = authorName,
+                Message = message,
+                IsSuperChat = isSuperChat,
+                Amount = amount,
+                USDAmount = amount,
+                DisplayAmount = "$" + amount.ToString()
+            };
+            Console.Write("Adding chat message from " + authorName);
+            LocalChatRepository.Instance.AddChat(ChatMessage);
         }
     }
 

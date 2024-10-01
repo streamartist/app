@@ -2,152 +2,193 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://getbootstrap.com/docs/5.0/examples/sidebars/sidebars.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bootstrap demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://getbootstrap.com/docs/5.0/examples/sidebars/sidebars.css">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+  <style>
+    .SimulstreamEnabled {
+      display: none;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      load();
+      showTab("server-status");
+      checkTos();
+    });
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            load();
-            showTab("server-status");
-            checkTos();
-        });
+    var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account"];
+    // Note the space after the comment. File formatter
+    // wants this.
+    var fieldValues = {/*fieldValues*/ };
 
-        var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "streamartist-streamkey","shorts-streamkey","shorts-filter","youtube-account"];
-        // Note the space after the comment. File formatter
-        // wants this.
-        var fieldValues = {/*fieldValues*/ };
+    var flags = {/*flags*/ };
 
-        function showTab(target) {
-            try {
-                log(target);
-            } catch (e) { alert(e) };
-            checkTos();
-            var ids = ["settings-form", "server-status", "tos"];
-            for (var i in ids) {
-                if (target == ids[i]) {
-                    document.getElementById(ids[i]).style.display = "block";
-                } else {
-                    document.getElementById(ids[i]).style.display = "none";
-                }
-            }
+    function flagValue(id) {
+      for (var i in flags) {
+        var flag = flags[i];
+        if (flag.StringId === id) {
+          return flag.Value;
         }
-
-        function checkTos() {
-            var tosAccepted = document.getElementById("tos-checkbox").checked === true;
-            if (tosAccepted) {
-                document.getElementById("tos-alert").style.display = "none";
-                document.getElementById("start-button").style.display = "block";
-            } else {
-                document.getElementById("tos-alert").style.display = "block";
-                document.getElementById("start-button").style.display = "none";
-
-            }
-        }
-
-        function save() {
-            var ids = fieldIds;
-            for (var i in ids) {
-                var id = ids[i];
-                var el = document.getElementById(id);
-                fieldValues[id] = el.value;
-            }
-            fieldValues["tos"] = document.getElementById("tos-checkbox").checked.toString();
-            window.location.href = 'csharp://save-settings/?values=' + JSON.stringify(fieldValues);
-        }
-
-
-      function connectYouTube() {
-        window.location.href = 'csharp://connect-youtube/';
-          
       }
+      return null;
+    }
 
-
-
-        function load() {
-            log(JSON.stringify(fieldValues));
-            var ids = fieldIds;
-            for (var i in ids) {
-                var id = ids[i];
-                var el = document.getElementById(id);
-                el.value = fieldValues[id];
-            }
-            document.getElementById("tos-checkbox").checked = fieldValues["tos"] === "true";
-            window.location.href = 'csharp://document-loaded/';
+    function showTab(target) {
+      try {
+        log(target);
+      } catch (e) { alert(e) };
+      checkTos();
+      var ids = ["settings-form", "server-status", "tos"];
+      for (var i in ids) {
+        if (target == ids[i]) {
+          document.getElementById(ids[i]).style.display = "block";
+        } else {
+          document.getElementById(ids[i]).style.display = "none";
         }
+      }
+    }
 
-        function setField(id, val) {
-            document.getElementById(id).value = val;
-        }
+    function checkTos() {
+      var tosAccepted = document.getElementById("tos-checkbox").checked === true;
+      if (tosAccepted) {
+        document.getElementById("tos-alert").style.display = "none";
+        document.getElementById("start-button").style.display = "block";
+      } else {
+        document.getElementById("tos-alert").style.display = "block";
+        document.getElementById("start-button").style.display = "none";
 
-        function setEl(id, val) {
-            document.getElementById(id).innerHTML = val;
-        }
+      }
+    }
 
-        function updateStatus(jsonStatusStr) {
-            log("Update status " + jsonStatusStr);
-            var status = JSON.parse(jsonStatusStr);
-            // var jsonDoc = JSON.parse(JSON.stringify(status));
-            // var s = jsonDoc["status"];
-            // var el = document.getElementById("status-text");
-            // log(`General status is ${s} with el ${el} from ${status}`);
-            // el.innerHTML = s;
-            // https://34.139.141.151:4330
-            // http://34.133.166.128:8000
-            setEl("status-text", status["status"]);
-            setEl("control-server-status-text", status["control-server-status"] || "Waiting");
-            setEl("streaming-server-status-text", status["streaming-server-status"] || "Waiting");
-            setEl("control-server-security-text", status["control-server-security"] || "Waiting");
-        }
+    function save() {
+      var ids = fieldIds;
+      for (var i in ids) {
+        var id = ids[i];
+        var el = document.getElementById(id);
+        fieldValues[id] = el.value;
+      }
+      fieldValues["tos"] = document.getElementById("tos-checkbox").checked.toString();
+      window.location.href = 'csharp://save-settings/?values=' + JSON.stringify(fieldValues);
+    }
 
-        function start() {
-            window.location.href = 'csharp://start/';
-        }
 
-        function log(txt) {
-            //document.getElementById("log").value = document.getElementById("log").value + "\n" + txt;
-        }
+    function connectYouTube() {
+      window.location.href = 'csharp://connect-youtube/';
 
-    </script>
+    }
+
+
+
+    function load() {
+      log(JSON.stringify(fieldValues));
+      var ids = fieldIds;
+      for (var i in ids) {
+        var id = ids[i];
+        var el = document.getElementById(id);
+        el.value = fieldValues[id];
+      }
+      document.getElementById("tos-checkbox").checked = fieldValues["tos"] === "true";
+      window.location.href = 'csharp://document-loaded/';
+    }
+
+    function setField(id, val) {
+      document.getElementById(id).value = val;
+    }
+
+    function setEl(id, val) {
+      document.getElementById(id).innerHTML = val;
+    }
+
+    function updateStatus(jsonStatusStr) {
+      log("Update status " + jsonStatusStr);
+      var status = JSON.parse(jsonStatusStr);
+      // var jsonDoc = JSON.parse(JSON.stringify(status));
+      // var s = jsonDoc["status"];
+      // var el = document.getElementById("status-text");
+      // log(`General status is ${s} with el ${el} from ${status}`);
+      // el.innerHTML = s;
+      // https://34.139.141.151:4330
+      // http://34.133.166.128:8000
+      setEl("status-text", status["status"]);
+      setEl("control-server-status-text", status["control-server-status"] || "Waiting");
+      setEl("effects-server-status-text", status["effects-server-status"] || "Waiting");
+      setEl("streaming-server-status-text", status["streaming-server-status"] || "Waiting");
+      setEl("control-server-security-text", status["control-server-security"] || "Waiting");
+
+    }
+
+    function start() {
+      window.location.href = 'csharp://start/';
+    }
+
+    function sendGift() {
+      var name = document.getElementById("effects-name").value;
+      var amount = document.getElementById("effects-amount").value;
+      var message = document.getElementById("effects-message").value;
+      
+      // Check if amount is an integer
+      if (!Number.isInteger(Number(amount))) {
+        alert("Please enter a valid number for the amount.");
+        return;
+      }
+      
+      var url = 'csharp://send-gift/?name=' + encodeURIComponent(name) + '&amount=' + encodeURIComponent(amount)+ '&message=' + encodeURIComponent(message);
+      
+      window.location.href = url;
+    }
+
+    function log(txt) {
+      //document.getElementById("log").value = document.getElementById("log").value + "\n" + txt;
+    }
+
+    function showUI() {
+      var SimulstreamEnabled = flagValue("SimulstreamEnabled");
+      if (SimulstreamEnabled) {
+        var Style = document.createElement('style');
+        Style.innerHTML = '.SimulstreamEnabled {display:inherit }';
+        document.head.appendChild(Style);
+      }
+    }
+
+  </script>
 </head>
 
 <body>
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-auto bg-light sticky-top">
-                <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                    <!-- <a href="/" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip"
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-auto bg-light sticky-top">
+        <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
+          <!-- <a href="/" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip"
                         data-bs-placement="right" data-bs-original-title="Icon-only">
                         <i class="bi-bootstrap fs-1"></i>
                     </a> -->
-                    <ul
-                        class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
-                        <li class="nav-item">
-                            <a href="javascript:void(0)" onclick="showTab('server-status')" class="nav-link py-3 px-2"
-                                title="" data-bs-toggle="tooltip" data-bs-placement="right"
-                                data-bs-original-title="Home">
-                                <i class="bi-play-circle fs-1"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0)" onclick="showTab('settings-form')" class="nav-link py-3 px-2"
-                                title="" data-bs-toggle="tooltip" data-bs-placement="right"
-                                data-bs-original-title="Dashboard">
-                                <i class="bi-gear fs-1"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0)" onclick="showTab('tos')" class="nav-link py-3 px-2">
-                                <i class="bi-info-circle fs-1"></i>
-                            </a>
-                        </li>
-                        <!-- <li>
+          <ul
+            class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
+            <li class="nav-item">
+              <a href="javascript:void(0)" onclick="showTab('server-status')" class="nav-link py-3 px-2" title=""
+                data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
+                <i class="bi-play-circle fs-1"></i>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" onclick="showTab('settings-form')" class="nav-link py-3 px-2" title=""
+                data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                <i class="bi-gear fs-1"></i>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" onclick="showTab('tos')" class="nav-link py-3 px-2">
+                <i class="bi-info-circle fs-1"></i>
+              </a>
+            </li>
+            <!-- <li>
                             <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
                                 data-bs-placement="right" data-bs-original-title="Orders">
                                 <i class="bi-table fs-1"></i>
@@ -165,8 +206,8 @@
                                 <i class="bi-people fs-1"></i>
                             </a>
                         </li> -->
-                    </ul>
-                    <!-- <div class="dropdown">
+          </ul>
+          <!-- <div class="dropdown">
                         <a href="#"
                             class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle"
                             id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
@@ -178,102 +219,135 @@
                             <li><a class="dropdown-item" href="#">Profile</a></li>
                         </ul>
                     </div> -->
+        </div>
+      </div>
+      <div class="col-sm p-3 min-vh-100">
+        <div class="col-md-7 col-lg-8" id="server-status">
+          <h4 class="mb-3">Server status</h4>
+          <div class="alert alert-danger" role="alert" id="tos-alert">
+            Please accept the terms of service in the (i) section first.
+          </div>
+          <table>
+            <tr class="SimulstreamEnabled">
+              <td>Status</td>
+              <td><span id="status-text">Waiting</span></td>
+            </tr>
+            <tr class="SimulstreamEnabled">
+              <td>Control Server</td>
+              <td><span id="control-server-status-text">Waiting</span></td>
+            </tr>
+            <tr class="SimulstreamEnabled">
+              <td>Streaming Server</td>
+              <td><span id="streaming-server-status-text">Waiting</span>
+              </td>
+              <td>
+                <a href="javascript:void(0)" class="w-100 btn btn-primary btn-sm SimulstreamEnabled" id="start-button"
+                    onclick="start()">Start</a>
+              </td>
+            </tr>
+            <tr class="SimulstreamEnabled">
+              <td>Secure</td>
+              <td><span id="control-server-security-text">Waiting</span></td>
+            </tr>
+            <tr>
+              <td>Effects Server</td>
+              <td><span id="effects-server-status-text">Waiting</span></td>
+            </tr>
+          </table>
+          <br/><br/>
+          <h4 class="mb-3">Effects</h4>
+          <table>
+            <tr>
+              <td>Name</td>
+              <td><input type="text" id="effects-name" value="Joel"/></td>
+            </tr>
+            <tr>
+              <td>Message</td>
+              <td><input type="text" id="effects-message" value="Thanks!"/></td>
+            </tr>
+            <tr>
+              <td>Amount</td>
+              <td><input type="text" id="effects-amount" value="10"/></td>
+            </tr>
+            <tr>
+              <td><div class="">
+                <a href="javascript:void(0)" class="w-100 btn btn-primary btn-sm" id="send-button"
+                  onclick="sendGift()">Simulate Gift</a>
+              </div></td>
+            </tr>
+          </table>
+          
+          
+          <textarea id="log" style="height:1000px;width:800px;display:none;"></textarea>
+          
+        </div>
+
+        <div class="col-md-7 col-lg-8" id="settings-form">
+          <h4 class="mb-3">Settings</h4>
+          <form class="needs-validation" novalidate="">
+            <div class="row g-3">
+              
+              <div class="col-sm-6">
+                <label for="youtube-account" class="form-label">YouTube Account</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="youtube-account" readonly>
+                  <button class="btn btn-outline-secondary" type="button" id="youtube-connect-btn"
+                    onclick="connectYouTube()">Connect</button>
                 </div>
-            </div>
-            <div class="col-sm p-3 min-vh-100">
-                <div class="col-md-7 col-lg-8" id="server-status">
-                    <h4 class="mb-3">Server status</h4>
-                    <div class="alert alert-danger" role="alert" id="tos-alert">
-                        Please accept the terms of service in the (i) section first.
-                    </div>
-                    <table>
-                        <tr>
-                            <td>Status</td>
-                            <td><span id="status-text">Waiting</span></td>
-                        </tr>
-                        <tr>
-                            <td>Control Server</td>
-                            <td><span id="control-server-status-text">Waiting</span></td>
-                        </tr>
-                        <tr>
-                            <td>Streaming Server</td>
-                            <td><span id="streaming-server-status-text">Waiting</span></td>
-                        </tr>
-                        <tr>
-                            <td>Secure</td>
-                            <td><span id="control-server-security-text">Waiting</span></td>
-                        </tr>
-                    </table>
-                    <textarea id="log" style="height:1000px;width:800px;display:none;"></textarea>
-                    <a href="javascript:void(0)" class="w-100 btn btn-primary btn-lg" id="start-button"
-                        onclick="start()">Start</a>
+              </div>
+              <div class="col-sm-6 "><div class="SimulstreamEnabled">
+                <label for="server-address" class="form-label">StreamArtist Server Address</label>
+                <input type="text" class="form-control" id="server-address" placeholder="" value="" required=""
+                  onblur="save()">
+                <div class="invalid-feedback">
+                  Valid address required.
                 </div>
+              </div>
+              </div>
 
-                <div class="col-md-7 col-lg-8" id="settings-form">
-                    <h4 class="mb-3">Settings</h4>
-                    <form class="needs-validation" novalidate="">
-                        <div class="row g-3">
-                          <div class="col-sm-6">
-                            <label for="youtube-account" class="form-label">YouTube Account</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="youtube-account" readonly>
-                                <button class="btn btn-outline-secondary" type="button" id="youtube-connect-btn" onclick="connectYouTube()">Connect</button>
-                            </div>
-                        </div>  
+              <div class="col-12 SimulstreamEnabled">
+                <label for="cloudstream-streamkey" class="form-label">Stream Artist Key</label>
+                <div class="input-group has-validation">
+                  <input type="password" class="form-control" id="cloudstream-streamkey"
+                    placeholder="Stream Artist Key" required="" onblur="save()">
+                  <div class="invalid-feedback">
+                    Stream Artist key required.
+                  </div>
+                </div>
+              </div>
 
-                            <div class="col-sm-6">
-                                <label for="server-address" class="form-label">StreamArtist Server Address</label>
-                                <input type="text" class="form-control" id="server-address" placeholder="" value=""
-                                    required="" onblur="save()">
-                                <div class="invalid-feedback">
-                                    Valid address required.
-                                </div>
-                            </div>
+              <div class="col-12 SimulstreamEnabled">
+                <label for="youtube-streamkey" class="form-label">YouTube Stream Key</label>
+                <div class="input-group has-validation">
+                  <input type="password" class="form-control" id="youtube-streamkey" placeholder="YouTube Stream Key"
+                    required="" onblur="save()">
+                  <div class="invalid-feedback">
+                    YouTube key required.
+                  </div>
+                </div>
+              </div>
 
-                            <div class="col-12">
-                                <label for="streamartist-streamkey" class="form-label">Stream Artist Key</label>
-                                <div class="input-group has-validation">
-                                    <input type="password" class="form-control" id="streamartist-streamkey"
-                                        placeholder="Stream Artist Key" required="" onblur="save()">
-                                    <div class="invalid-feedback">
-                                        Stream Artist key required.
-                                    </div>
-                                </div>
-                            </div>
+              <div class="col-12 SimulstreamEnabled">
+                <label for="twitch-streamkey" class="form-label">Twitch Stream Key</label>
+                <input type="password" class="form-control" id="twitch-streamkey" placeholder="Twitch StreamKey"
+                  onblur="save()">
+                <div class="invalid-feedback">
+                  Please enter a valid key.
+                </div>
+              </div>
 
-                            <div class="col-12">
-                                <label for="youtube-streamkey" class="form-label">YouTube Stream Key</label>
-                                <div class="input-group has-validation">
-                                    <input type="password" class="form-control" id="youtube-streamkey"
-                                        placeholder="YouTube Stream Key" required="" onblur="save()">
-                                    <div class="invalid-feedback">
-                                        YouTube key required.
-                                    </div>
-                                </div>
-                            </div>
+              <div class="col-12 SimulstreamEnabled">
+                <label for="shorts-streamkey" class="form-label">YouTube Shorts Stream Key</label>
+                <input type="password" class="form-control" id="shorts-streamkey" placeholder="YouTube Shorts StreamKey"
+                  onblur="save()">
+                <div class="invalid-feedback">
+                  Please enter a valid key.
+                </div>
+              </div>
 
-                            <div class="col-12">
-                                <label for="twitch-streamkey" class="form-label">Twitch Stream Key</label>
-                                <input type="password" class="form-control" id="twitch-streamkey"
-                                    placeholder="Twitch StreamKey" onblur="save()">
-                                <div class="invalid-feedback">
-                                    Please enter a valid key.
-                                </div>
-                            </div>
-
-                            <div class="col-12">
-                              <label for="shorts-streamkey" class="form-label">YouTube Shorts Stream Key</label>
-                              <input type="password" class="form-control" id="shorts-streamkey"
-                                  placeholder="YouTube Shorts StreamKey" onblur="save()">
-                              <div class="invalid-feedback">
-                                  Please enter a valid key.
-                              </div>
-                          </div>
-
-                          <div class="col-12">
-                            <label for="shorts-filter" class="form-label">YouTube Shorts Filter</label>
-                            <textarea class="form-control" id="shorts-filter" style="width:100%;height:400px;"
-                                onblur="save()">
+              <div class="col-12 SimulstreamEnabled">
+                <label for="shorts-filter" class="form-label">YouTube Shorts Filter</label>
+                <textarea class="form-control" id="shorts-filter" style="width:100%;height:400px;" onblur="save()">
 [0]copy [pip]; 
 [pip]crop=x=102:y=71:w=433:h=65 [small];
 [small]scale=-1:-1[small];
@@ -282,20 +356,20 @@
 [image]scale=-1:960
                               </textarea>
 
-                            <div class="invalid-feedback">
-                                Please enter a valid key.
-                            </div>
-                        </div>
-
-
-                            <!-- <a href="javascript:void" class="w-100 btn btn-primary btn-lg" onclick="save();">Save</a> -->
-                    </form>
+                <div class="invalid-feedback">
+                  Please enter a valid key.
                 </div>
-            </div>
-            <div class="col-md-7 col-lg-8" id="tos">
-                <h4 class="mb-3">Terms of service</h4>
+              </div>
 
-                <textarea style="height:500px;width:800px">
+
+              <!-- <a href="javascript:void" class="w-100 btn btn-primary btn-lg" onclick="save();">Save</a> -->
+          </form>
+        </div>
+      </div>
+      <div class="col-md-7 col-lg-8" id="tos">
+        <h4 class="mb-3">Terms of service</h4>
+
+        <textarea style="height:500px;width:800px">
                         GNU GENERAL PUBLIC LICENSE
                         Version 3, 29 June 2007
  
@@ -972,26 +1046,27 @@
  <https://www.gnu.org/licenses/why-not-lgpl.html>.
  
                     </textarea>
-                <!-- <textarea id="log" style="height:1000px;width:800px;"></textarea> -->
-                <input type="checkbox" id="tos-checkbox" onclick="save()" value="I agree to the terms of service">
-                I agree to the terms of service</input>
+        <!-- <textarea id="log" style="height:1000px;width:800px;"></textarea> -->
+        <input type="checkbox" id="tos-checkbox" onclick="save()" value="I agree to the terms of service">
+        I agree to the terms of service</input>
 
 
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          load();
-          showTab("server-status");
-          checkTos();
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      load();
+      showTab("server-status");
+      checkTos();
+      showUI();
     });
-        
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
 
 
 

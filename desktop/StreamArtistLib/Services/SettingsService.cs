@@ -6,7 +6,8 @@ namespace StreamArtist.Services
 {
     public class SettingsService
     {
-        private readonly string[] _fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "streamartist-streamkey", "tos", "shorts-streamkey", "shorts-filter"];
+        // TODO: rename cloudstream-streamkey to streamartist-streamkey
+        private readonly string[] _fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter"];
         private readonly Repositories.Settings _settings = new Repositories.Settings();
 
         public Dictionary<string, string> GetSettings()
@@ -49,6 +50,19 @@ namespace StreamArtist.Services
         {
             // Retrieve the token from Preferences
             return _settings.GetSecureStorageValueSync("GoogleOAuthToken");
+        }
+
+        public void SetGoogleRefreshToken(string token)
+        {
+            // Implement the logic to save the token
+            // For example, using Preferences:
+            _settings.SetSecureValue("GoogleRefreshToken", token);
+        }
+
+        public string GetGoogleRefreshToken()
+        {
+            // Retrieve the token from Preferences
+            return _settings.GetSecureStorageValueSync("GoogleRefreshToken");
         }
 
         public void SetGoogleAccessTokenExpiry(DateTime Expiry)
