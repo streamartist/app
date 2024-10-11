@@ -16,9 +16,9 @@ namespace StreamArtist.Domain
                 var renderer = new FireRendererRequest {
                     Amount = chat.Amount,
                     DisplayAmount = chat.DisplayAmount,
-                    Size = /*chat.Amount **/ 2,
-                    TTL = MultiplierFactor * 10,
-                    Num = MultiplierFactor,
+                    Size = /*chat.Amount **/ 1,
+                    TTL = Math.Min(5,(int) chat.USDAmount),
+                    Num = Math.Min(10,(int) chat.USDAmount/5),
                     Name = chat.AuthorName
                 };
                 list.Add(renderer);

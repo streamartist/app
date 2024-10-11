@@ -12,26 +12,30 @@ body {
 .donation-message {
     font-family: impact;
     color: white;
-    font-size: 50px;
+    font-size: 100px;
+    padding-left: 100px;
+    padding-top: 100px;
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
-
+    display:none;
 }
 
 .screen {
     height: 1440px;
     width: 2560px;
     /* display: none; */
-    /*background-color:#ff09e2;*/
+    /* background-color:#ff09e2; */
 }
 
 .fire-uber {
     position: absolute;
     background-color: transparent;
-    height: 200px;
-    width: 150px;
-    top: 500px;
-    left: 500px;
+    display: none;
+    /* height: 200px;
+    width: 150px; */
+    zoom:200%;
+    /* top: 500px;
+    left: 500px; */
 }
 
 .fire-container {
@@ -40,6 +44,7 @@ body {
     position: relative;
     height: 200px;
     width: 150px;
+    zoom:200%;
 }
 
 .g-fire {

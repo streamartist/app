@@ -64,6 +64,15 @@ public class WebServerService
             return;
         }
 
+        if (context.Request.RawUrlWithoutQuery.StartsWith("/video/"))
+        {
+            string FileName = context.Request.RawUrlWithoutQuery.Substring("/video/".Length);
+            await ServeVideoFile(context, FileName);
+            return;
+        }
+
+        // Fire from https://www.vecteezy.com/video/10366199-fire-frame-loop-effect-burning-background-with-fire-abstract-background-seamless-loop-fire-burn-flame-energy-4k
+
         // Default serving path.
         using var stream = await FileSystem.OpenAppPackageFileAsync("animator.html");
         using var reader = new StreamReader(stream);
@@ -104,6 +113,31 @@ public class WebServerService
         return jsonString;
     }
 
+    // private async Task ServeVideoFile(HttpContext context, string fileName)
+    // {
+    //     string filePath = Path.Combine(FileSystem.AppDataDirectory, "Videos", fileName);
+
+    //     if (!File.Exists(filePath))
+    //     {
+    //         await context.Response.Send("File not found", 404, "text/plain");
+    //         return;
+    //     }
+
+    //     string MimeType = "video/mp4"; // Default to MP4
+    //     if (fileName.EndsWith(".webm", StringComparison.OrdinalIgnoreCase))
+    //     {
+    //         MimeType = "video/webm";
+    //     }
+    //     else if (fileName.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+    //     {
+    //         MimeType = "video/ogg";
+    //     }
+
+    //     context.Response.Headers.Add("Content-Type", MimeType);
+    //     context.Response.Headers.Add("Accept-Ranges", "bytes");
+
+    //     await context.Response.SendFile(filePath, MimeType);
+    // }
     
 }
 public abstract class Person
