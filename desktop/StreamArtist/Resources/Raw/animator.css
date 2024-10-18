@@ -24,7 +24,7 @@ body {
 
     background: url(blue.png);
     background-size: cover;
-    color: #fff;
+    color: #f12929;
     -webkit-text-fill-color: transparent;
     -webkit-background-clip: text;
 
@@ -35,10 +35,10 @@ body {
 
 @-webkit-keyframes glow {
     from {
-      text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
+      text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e69900, 0 0 40px #e69900, 0 0 50px #e69900, 0 0 60px #e69900, 0 0 70px #e69900;
     }
     to {
-      text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+      text-shadow: 0 0 20px #fff, 0 0 30px #ffba31, 0 0 40px #ffba31, 0 0 50px #ffba31, 0 0 60px #ffba31, 0 0 70px #ffba31, 0 0 80px #ffba31;
     }
   }
 
