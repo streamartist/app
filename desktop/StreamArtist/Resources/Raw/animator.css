@@ -17,16 +17,9 @@ body {
     left: 50%; /* Center horizontally */
     transform: translate(-50%, -50%); /* Offset by half its width and height */
     -webkit-text-stroke-width: 5px;
-    -webkit-text-stroke-color: lightblue;
+    -webkit-text-stroke-color: #ffba31;
     position: absolute;
     display:none;
-
-
-    background: url(blue.png);
-    background-size: cover;
-    color: #f12929;
-    -webkit-text-fill-color: transparent;
-    -webkit-background-clip: text;
 
     -webkit-animation: glow 1s ease-in-out infinite alternate;
     -moz-animation: glow 1s ease-in-out infinite alternate;

@@ -1,5 +1,6 @@
 let chatQueue = [];
-let currentChatQueue = []; // New queue for the currently displayed chat
+let currentChat = null;
+let hidingChat = null;
 let fireElements = [];
 
 
@@ -29,7 +30,11 @@ function fetchData() {
 }
 
 function displayNextChat() {
-    if (chatQueue.length > 0) {
+    if (hidingChat != null || currentChat != null) {
+        return;
+    }
+    console.log("display next chat");
+    if (chatQueue.length > 0 && currentChat == null && hidingChat == null) {
         const chat = chatQueue[0];
         chat.ExpirationTime = Date.now() + chat.TTL * 1000;
         console.log(`Chat will expire at ${new Date(chat.ExpirationTime).toLocaleString()}`);
@@ -42,30 +47,36 @@ function displayNextChat() {
         document.getElementById("message").style.display = "block";
         document.getElementById("message").innerHTML = `${chat.Name} donated ${chat.DisplayAmount}!`;
         
-        currentChatQueue.push(chat); // Add to the current chat queue
-        chatQueue.shift(); // Remove from the chat queue
+        currentChat = chat; 
+        chatQueue.shift(); 
         animateText();
     }
 }
 
-
-
 function processChats() {
+    console.log("process chats");
+    if (hidingChat != null) {
+        return;
+    }
     const currentTime = Date.now();
-    while (currentChatQueue.length > 0 && currentTime >= currentChatQueue[0].ExpirationTime) {
+    if (currentChat != null  && currentTime >= currentChat.ExpirationTime) {
         
         hideElements();
     }
     if (chatQueue.length > 0) {
+        console.log("display next chat");
         displayNextChat();
     }
 }
 
 function hideElements() {
-    
-    $('.tlt').textillate('out');
-    
-    
+    if (hidingChat != null) {
+        return;
+    }
+    console.log("hide");
+    clearInterval(pLoop);
+    hidingChat = currentChat;
+    $('.tlt').textillate('out');   
 }
 
 function addTestChat() {
@@ -89,7 +100,7 @@ function addTestChat() {
 setInterval(fetchData, 5000);
 
 // Set an interval to process chats every 1 second
-setInterval(processChats, 1000);
+pLoop = setInterval(processChats, 1000);
 
 
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -161,7 +172,9 @@ function animateText() {
           callback: function () {
             document.getElementById("message").style.display = "none";
             document.getElementById("video").style.display="none";
-            currentChatQueue.shift(); // Remove expired chat from current queue
+            currentChat = null;
+            hidingChat = null;
+            pLoop = setInterval(processChats, 1000);
           }
         },
       
