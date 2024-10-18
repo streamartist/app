@@ -1,30 +1,8 @@
 let chatQueue = [];
+let currentChatQueue = []; // New queue for the currently displayed chat
 let fireElements = [];
 
-function setup() {
-    const fireUber = document.getElementById("fire-uber");
-    const parentContainer = fireUber.parentElement;
-    const containerWidth = parentContainer.offsetWidth;
 
-    // Create 20 copies of the fire-uber element
-    for (let i = 0; i < 10; i++) {
-        const clone = fireUber.cloneNode(true);
-        clone.id = `fire-uber-${i}`;
-        clone.style.display = "none";
-        clone.style.position = "absolute";
-        clone.style.left = `${(i / 10) * 100}%`;
-        clone.style.bottom = "0px";
-        parentContainer.appendChild(clone);
-        fireElements.push(clone);
-    }
-
-    // Hide the original fire-uber element
-    fireUber.style.display = "none";
-
-    if (window.location.protocol === 'file:') {
-        // addTestChat();
-    }
-}
 
 function fetchData() {
         
@@ -41,7 +19,7 @@ function fetchData() {
             const Chats = data;
             if (Chats.length > 0) {
                 Chats.forEach(Chat => {
-                    Chat.ExpirationTime = Date.now() + Chat.TTL * 1000;
+                    
                     chatQueue.push(Chat);
                 });
                 displayNextChat();
@@ -53,78 +31,41 @@ function fetchData() {
 function displayNextChat() {
     if (chatQueue.length > 0) {
         const chat = chatQueue[0];
+        chat.ExpirationTime = Date.now() + chat.TTL * 1000;
+        console.log(`Chat will expire at ${new Date(chat.ExpirationTime).toLocaleString()}`);
         const screen = document.getElementById("screen");
 
-        // Calculate zoom based on chat.Size
-        const zoom = chat.Size;
-
-        // Show the number of fire elements based on chat.Num
-        const numToShow = Math.min(chat.Num, fireElements.length);
-        
-        // Start from the right-most element
-        for (let i = fireElements.length - 1; i >= 0; i--) {
-            const element = fireElements[i];
-            if (i >= fireElements.length - numToShow) {
-                element.style.display = "block";
-                element.style.transform = `scale(${zoom})`;
-                setFirePosition(element, chat);
-            } else {
-                element.style.display = "none";
-            }
-        }
+        const video = document.getElementById("video");
+        video.style.display = "block";  
 
         // Display the message
         document.getElementById("message").style.display = "block";
         document.getElementById("message").innerHTML = `${chat.Name} donated ${chat.DisplayAmount}!`;
+        
+        currentChatQueue.push(chat); // Add to the current chat queue
+        chatQueue.shift(); // Remove from the chat queue
+        animateText();
     }
 }
 
-function setFirePosition(FireUber, Chat) {
-    // const FireUber = document.getElementById(id);
-    const Screen = document.getElementById("screen");
 
-    // Position the fire-uber element
-    FireUber.style.position = "absolute";
-    FireUber.style.bottom = "0px";
-    // FireUber.style.left = "80%";
-
-    // Ensure the screen div has a relative position for proper positioning
-    Screen.style.position = "relative";
-
-    
-
-    // Compute how much of fire-container is hidden in the overflow
-    const FireContainerRect = FireUber.getBoundingClientRect();//FireContainer.getBoundingClientRect();
-    const ParentContainer = Screen;
-    const ParentContainerRect = ParentContainer.getBoundingClientRect();
-
-
-    // Scaling causes some issues with positioning.
-    const parentBottom = ParentContainerRect.top + ParentContainerRect.height;
-    const fireBottom = FireContainerRect.top + FireContainerRect.height;
-    const hiddenHeight = Math.max(0, fireBottom - parentBottom);
-
-    FireUber.style.bottom = `${hiddenHeight}px`;
-}
 
 function processChats() {
-    const CurrentTime = Date.now();
-    while (chatQueue.length > 0 && CurrentTime >= chatQueue[0].ExpirationTime) {
-        chatQueue.shift();
+    const currentTime = Date.now();
+    while (currentChatQueue.length > 0 && currentTime >= currentChatQueue[0].ExpirationTime) {
+        
         hideElements();
     }
     if (chatQueue.length > 0) {
         displayNextChat();
-        chatQueue.shift();
     }
 }
 
 function hideElements() {
-    document.getElementById("message").style.display = "none";
     
-    fireElements.forEach(element => {
-        element.style.display = "none";
-    });
+    $('.tlt').textillate('out');
+    
+    
 }
 
 function addTestChat() {
@@ -151,6 +92,83 @@ setInterval(fetchData, 5000);
 setInterval(processChats, 1000);
 
 
+document.addEventListener("DOMContentLoaded", function(event) {
+//    animateText();
 
-// Call setup function when the page loads
-window.onload = setup;
+
+});
+
+function animateText() {
+    $('.tlt').textillate({
+        // the default selector to use when detecting multiple texts to animate
+        // selector: '.texts',
+      
+        // enable looping
+        loop: false,
+      
+        // sets the minimum display time for each text before it is replaced
+        minDisplayTime: 2000,
+      
+        // sets the initial delay before starting the animation
+        // (note that depending on the in effect you may need to manually apply
+        // visibility: hidden to the element before running this plugin)
+        initialDelay: 0,
+      
+        // set whether or not to automatically start animating
+        autoStart: true,
+      
+        // custom set of 'in' effects. This effects whether or not the
+        // character is shown/hidden before or after an animation
+        inEffects: [],
+      
+        // custom set of 'out' effects
+        outEffects: [ 'hinge' ],
+      
+        // in animation settings
+        in: {
+            // set the effect name
+          effect: 'fadeInLeftBig',
+      
+          // set the delay factor applied to each consecutive character
+          delayScale: 1.5,
+      
+          // set the delay between each character
+          delay: 50,
+      
+          // set to true to animate all the characters at the same time
+          sync: false,
+      
+          // randomize the character sequence
+          // (note that shuffle doesn't make sense with sync = true)
+          shuffle: false,
+      
+          // reverse the character sequence
+          // (note that reverse doesn't make sense with sync = true)
+          reverse: false,
+      
+          // callback that executes once the animation has finished
+          callback: function () {}
+        },
+      
+        // out animation settings.
+        out: {
+          effect: 'flash',
+          delayScale: 1.5,
+          delay: 50,
+          sync: false,
+          shuffle: false,
+          reverse: false,
+          callback: function () {
+            document.getElementById("message").style.display = "none";
+            document.getElementById("video").style.display="none";
+            currentChatQueue.shift(); // Remove expired chat from current queue
+          }
+        },
+      
+        // callback that executes once textillate has finished
+        callback: function () {},
+      
+        // set the type of token to animate (available types: 'char' and 'word')
+        type: 'char'
+      });
+}

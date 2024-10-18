@@ -54,8 +54,6 @@ namespace StreamArtist.Services
 
         public void SetGoogleRefreshToken(string token)
         {
-            // Implement the logic to save the token
-            // For example, using Preferences:
             _settings.SetSecureValue("GoogleRefreshToken", token);
         }
 

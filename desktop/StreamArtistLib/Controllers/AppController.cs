@@ -209,7 +209,11 @@ namespace StreamArtist.Controllers
 
         public void OnStart()
         {
-            post("start");
+            GoogleOAuthService service =   new GoogleOAuthService();
+            var accessToken = service.GetAccessToken();
+            Console.WriteLine("Access token: " + accessToken);
+
+            //post("start");
         }
 
         public void OnSave(String values)

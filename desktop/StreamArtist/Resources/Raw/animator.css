@@ -11,14 +11,36 @@ body {
 
 .donation-message {
     font-family: impact;
-    color: white;
-    font-size: 100px;
-    padding-left: 100px;
-    padding-top: 100px;
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: black;
+    color: transparent;
+    font-size: 200px;
+    top: 40%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Offset by half its width and height */
+    -webkit-text-stroke-width: 5px;
+    -webkit-text-stroke-color: lightblue;
+    position: absolute;
     display:none;
+
+
+    background: url(blue.png);
+    background-size: cover;
+    color: #fff;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+
+    -webkit-animation: glow 1s ease-in-out infinite alternate;
+    -moz-animation: glow 1s ease-in-out infinite alternate;
+    animation: glow 1s ease-in-out infinite alternate;
 }
+
+@-webkit-keyframes glow {
+    from {
+      text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
+    }
+    to {
+      text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+    }
+  }
 
 .screen {
     height: 1440px;

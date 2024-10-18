@@ -1,0 +1,245 @@
+<html>
+
+<head>
+  <link rel="stylesheet" href="/files?file=animator.css">
+  <script src="/files?file=animator.js"></script>
+
+  <link rel="stylesheet" href="animator.css">
+  <script src="animator.js"></script> 
+
+</head>
+
+<body>
+  <!-- <div id="red-dot" style="position: absolute;border: 3px solid white; height: 10px;left:1850px; width:10px;background-color: red;">
+  </div>
+  <div id="blue-dot" style="position: absolute;border: 3px solid white; height: 10px;left:1880px; width:10px;background-color: blue;">
+  </div> -->
+  <div class="screen" id="screen">
+    <div id="message" class="donation-message">Joel donated $1000!</div>
+    <div>
+      <!-- Attribute to https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Manipulating_video_using_canvas -->
+    <video
+        id="video"
+        src="http://localhost:42984/video/?file=fire.mp4"
+        width="2560"  
+        autoplay
+        controls
+        loop
+        crossorigin="anonymous" />
+      </div>
+    
+      <div class="fire-uber" id="fire-uber">
+      <div class="fire-container" id="fire-container">
+        <!-- style="display: none;" -->
+        <div class="g-fire" id="animation">
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+          <div class="g-ball"> </div>
+        </div>
+      </div>
+    </div>
+
+    
+  </div>
+
+
+</body>
+
+</html>
