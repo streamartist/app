@@ -104,7 +104,7 @@ pLoop = setInterval(processChats, 1000);
 
 
 document.addEventListener("DOMContentLoaded", function(event) {
-//    animateText();
+    // addTestChat();
 
 
 });

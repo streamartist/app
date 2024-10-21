@@ -11,7 +11,9 @@ body {
 
 .donation-message {
     font-family: impact;
-    color: transparent;
+    width:100%;
+    text-align: center;
+    color: #ffba31;
     font-size: 200px;
     top: 40%; /* Center vertically */
     left: 50%; /* Center horizontally */

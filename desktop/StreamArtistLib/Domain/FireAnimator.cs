@@ -17,7 +17,7 @@ namespace StreamArtist.Domain
                     Amount = chat.Amount,
                     DisplayAmount = chat.DisplayAmount,
                     Size = /*chat.Amount **/ 1,
-                    TTL = Math.Min(5,(int) chat.USDAmount),
+                    TTL = 5, // TODO: Restore: Math.Min(5,(int) chat.USDAmount),
                     Num = Math.Min(10,(int) chat.USDAmount/5),
                     Name = chat.AuthorName
                 };
