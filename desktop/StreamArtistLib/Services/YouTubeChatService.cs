@@ -124,9 +124,9 @@ namespace StreamArtist.Services
                         AuthorName = message.AuthorDetails.DisplayName,
                         Message = message.Snippet.DisplayMessage,
                         IsSuperChat = message.Snippet.Type == "superChatEvent",
-                        Amount = (double) message.Snippet.SuperChatDetails?.AmountMicros/1000000,
+                        Amount = (double) (message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros/1000000 :0),
                         DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
-                        USDAmount = currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency,(double) message.Snippet.SuperChatDetails?.AmountMicros/1000000)
+                        USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency,(double) message.Snippet.SuperChatDetails?.AmountMicros/1000000) :0)
                     });
                 }
 

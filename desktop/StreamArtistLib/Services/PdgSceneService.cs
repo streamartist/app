@@ -26,6 +26,8 @@ namespace StreamArtistLib.Services
         private bool sceneOverride = false;
         private const int SCENE_DURATION = 10000; // 10 seconds
 
+        private bool debuggerOn = false;
+
         public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService)
         {
             this.obsService = obsService;
@@ -63,6 +65,10 @@ namespace StreamArtistLib.Services
 
         public async Task Update()
         {
+            // TODO: Don't forget to remove *******************************************************************
+            //if (debuggerOn) return;
+
+            debuggerOn = true;
             if (scenes == null || scenes.Count <= 1) // Need at least two scenes (default + one other)
             {
                 Debug.WriteLine("Not enough scenes configured. Check your settings.");
@@ -86,9 +92,19 @@ namespace StreamArtistLib.Services
             {
                 Debug.WriteLine("No active live streams found.");
                 return;
+            } else
+            {
+                Debug.WriteLine("Looking at video " + streams[0].VideoId);
             }
 
             var chats = await youTubeChatService.GetNewChatMessages(streams[0].VideoId);
+            if (chats.Count > 0)
+            {
+                Debug.WriteLine("Got chats");
+            } else
+            {
+                Debug.WriteLine("No chats");
+            }
             //if (true && !sceneOverride)
             //if (!sceneOverride && chats != null && chats.Any(chat => chat.IsSuperChat))
             if (!sceneOverride && chats != null && chats.Any(chat => true))
