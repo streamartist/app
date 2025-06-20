@@ -14,6 +14,7 @@ using StreamArtist.Domain;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using System.Threading.Tasks;
+using StreamArtistLib.Services;
 
 namespace StreamArtist.Controllers
 {
@@ -28,8 +29,11 @@ namespace StreamArtist.Controllers
 
         private readonly YouTubeChatService youTubeChatService = new YouTubeChatService();
 
+        private PdgSceneService _pdgSceneService;
+        private Timer _timer;
+
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
-        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter"];
+        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter","obs-password","obs-port"];
         string[] statusFieldNames = ["status-text", "control-server-status", "streaming-server-status", "control-server-security", "effects-server-status"];
 
 
@@ -45,17 +49,33 @@ namespace StreamArtist.Controllers
             SettingsController.LoadGoogleSignInStatus();
             WebServerService.StartLocalServer();
 
-            Timer timer = new System.Timers.Timer();
-            timer.Elapsed += new ElapsedEventHandler(TimerTickEvent);
-            timer.Interval = 5000;
-            timer.Enabled = false;
+            var settings = _settingsService.GetSettings();
+            if (int.TryParse(settings["obs-port"], out int port))
+            {
+                var obsService = new OBSService(port, settings["obs-password"]);
+                _pdgSceneService = new PdgSceneService(obsService, youTubeChatService, _settingsService);
+            }
+            else
+            {
+                Debug.WriteLine("OBS port not configured or invalid.");
+            }
+
+            _timer = new System.Timers.Timer();
+            _timer.Elapsed += new ElapsedEventHandler(TimerTickEvent);
+            _timer.Interval = 5000;
+            _timer.Enabled = true;
         }
 
         private async void TimerTickEvent(object source, ElapsedEventArgs e)
         {
             CheckHttpConnection();
 
-            // YouTubeChatService youTubeChatService = new YouTubeChatService(_settingsService);
+            if (_pdgSceneService != null && FlagService.GetFlag(FlagId.ArEffectsEnabled).Value)
+            {
+                await _pdgSceneService.Update();
+            }
+
+                        // YouTubeChatService youTubeChatService = new YouTubeChatService(_settingsService);
             // var logger = LoggingService.Instance;
 
             // var channelId = await youTubeChatService.GetConnectedChannelId();

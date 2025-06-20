@@ -8,7 +8,9 @@ namespace StreamArtist.Domain
 {
     public enum FlagId
     {
-        SimulstreamEnabled
+        SimulstreamEnabled,
+        ArEffectsEnabled,
+        OverlayEffectsEnabled
     }
 
     public class Flag

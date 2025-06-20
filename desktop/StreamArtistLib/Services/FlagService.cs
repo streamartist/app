@@ -9,7 +9,9 @@ namespace StreamArtist.Services
     {
         static Dictionary<FlagId, Flag> Flags = new Dictionary<FlagId, Flag>
         {
-            { FlagId.SimulstreamEnabled, new Flag { Id = FlagId.SimulstreamEnabled, Value = true } }
+            { FlagId.SimulstreamEnabled, new Flag { Id = FlagId.SimulstreamEnabled, Value = false } },
+            { FlagId.OverlayEffectsEnabled, new Flag { Id = FlagId.OverlayEffectsEnabled, Value = false } },
+            { FlagId.ArEffectsEnabled, new Flag { Id = FlagId.ArEffectsEnabled, Value = true } }
         };
 
         public static List<Flag> GetFlags()

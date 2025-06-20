@@ -14,6 +14,9 @@
     .SimulstreamEnabled {
       display: none;
     }
+    .OverlayEffectsEnabled {
+        display:none;
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -22,7 +25,7 @@
       checkTos();
     });
 
-    var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account"];
+      var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account", "obs-port", "obs-password","obs-scenes"];
     // Note the space after the comment. File formatter
     // wants this.
     var fieldValues = {/*fieldValues*/ };
@@ -153,7 +156,15 @@
         var Style = document.createElement('style');
         Style.innerHTML = '.SimulstreamEnabled {display:inherit }';
         document.head.appendChild(Style);
-      }
+        }
+
+        var OverlayEffectsEnabled = flagValue("OverlayEffectsEnabled");
+        if (OverlayEffectsEnabled) {
+            var Style = document.createElement('style');
+            Style.innerHTML = '.OverlayEffectsEnabled {display:inherit }';
+            document.head.appendChild(Style);
+        }
+
     }
 
   </script>
@@ -249,14 +260,14 @@
               <td>Secure</td>
               <td><span id="control-server-security-text">Waiting</span></td>
             </tr>
-            <tr>
+            <tr class="OverlayEffectsEnabled">
               <td>Effects Server</td>
               <td><span id="effects-server-status-text">Waiting</span></td>
             </tr>
           </table>
           <br/><br/>
-          <h4 class="mb-3">Effects</h4>
-          <table>
+          <h4 class="mb-3 OverlayEffectsEnabled">Effects</h4>
+          <table class="OverlayEffectsEnabled">
             <tr>
               <td>Name</td>
               <td><input type="text" id="effects-name" value="Joel"/></td>
@@ -285,69 +296,102 @@
         <div class="col-md-7 col-lg-8" id="settings-form">
           <h4 class="mb-3">Settings</h4>
           <form class="needs-validation" novalidate="">
-            <div class="row g-3">
-              
-              <div class="col-sm-6">
-                <label for="youtube-account" class="form-label">YouTube Account</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" id="youtube-account" readonly>
-                  <button class="btn btn-outline-secondary" type="button" id="youtube-connect-btn"
-                    onclick="connectYouTube()">Connect</button>
-                </div>
-              </div>
-              <div class="col-sm-6 "><div class="SimulstreamEnabled">
-                <label for="server-address" class="form-label">StreamArtist Server Address</label>
-                <input type="text" class="form-control" id="server-address" placeholder="" value="" required=""
-                  onblur="save()">
-                <div class="invalid-feedback">
-                  Valid address required.
-                </div>
-              </div>
-              </div>
+              <div class="row g-3">
 
-              <div class="col-12 SimulstreamEnabled">
-                <label for="cloudstream-streamkey" class="form-label">Stream Artist Key</label>
-                <div class="input-group has-validation">
-                  <input type="password" class="form-control" id="cloudstream-streamkey"
-                    placeholder="Stream Artist Key" required="" onblur="save()">
-                  <div class="invalid-feedback">
-                    Stream Artist key required.
+                  <div class="col-sm-6">
+                      <label for="youtube-account" class="form-label">YouTube Account</label>
+                      <div class="input-group">
+                          <input type="text" class="form-control" id="youtube-account" readonly>
+                          <button class="btn btn-outline-secondary" type="button" id="youtube-connect-btn"
+                                  onclick="connectYouTube()">
+                              Connect
+                          </button>
+                      </div>
                   </div>
-                </div>
-              </div>
-
-              <div class="col-12 SimulstreamEnabled">
-                <label for="youtube-streamkey" class="form-label">YouTube Stream Key</label>
-                <div class="input-group has-validation">
-                  <input type="password" class="form-control" id="youtube-streamkey" placeholder="YouTube Stream Key"
-                    required="" onblur="save()">
-                  <div class="invalid-feedback">
-                    YouTube key required.
+                  <div class="col-sm-12 ">
+                      <div>
+                          <label for="obs-port" class="form-label">OBS WebSocket Port</label>
+                          <input type="text" class="form-control" id="obs-port" placeholder="" value="" required=""
+                                 onblur="save()">
+                          <div class="invalid-feedback">
+                              Valid port required.
+                          </div>
+                      </div>
                   </div>
-                </div>
-              </div>
+                  <div class="col-sm-12 ">
+                      <div>
+                          <label for="obs-password" class="form-label">OBS WebSocket Password</label>
+                          <input type="text" class="form-control" id="obs-password" placeholder="" value="" required=""
+                                 onblur="save()">
+                          <div class="invalid-feedback">
+                              Valid password required.
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-sm-12 ">
+                      <div>
+                          <label for="obs-scenes" class="form-label">OBS Scene List (default first)</label>
+                          <input type="text" class="form-control" id="obs-scenes" placeholder="" value="" required=""
+                                 onblur="save()">
+                          <div class="invalid-feedback">
+                              Valid scenes required.
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6 ">
+                      <div class="SimulstreamEnabled">
+                          <label for="server-address" class="form-label">StreamArtist Server Address</label>
+                          <input type="text" class="form-control" id="server-address" placeholder="" value="" required=""
+                                 onblur="save()">
+                          <div class="invalid-feedback">
+                              Valid address required.
+                          </div>
+                      </div>
+                  </div>
 
-              <div class="col-12 SimulstreamEnabled">
-                <label for="twitch-streamkey" class="form-label">Twitch Stream Key</label>
-                <input type="password" class="form-control" id="twitch-streamkey" placeholder="Twitch StreamKey"
-                  onblur="save()">
-                <div class="invalid-feedback">
-                  Please enter a valid key.
-                </div>
-              </div>
+                  <div class="col-12 SimulstreamEnabled">
+                      <label for="cloudstream-streamkey" class="form-label">Stream Artist Key</label>
+                      <div class="input-group has-validation">
+                          <input type="password" class="form-control" id="cloudstream-streamkey"
+                                 placeholder="Stream Artist Key" required="" onblur="save()">
+                          <div class="invalid-feedback">
+                              Stream Artist key required.
+                          </div>
+                      </div>
+                  </div>
 
-              <div class="col-12 SimulstreamEnabled">
-                <label for="shorts-streamkey" class="form-label">YouTube Shorts Stream Key</label>
-                <input type="password" class="form-control" id="shorts-streamkey" placeholder="YouTube Shorts StreamKey"
-                  onblur="save()">
-                <div class="invalid-feedback">
-                  Please enter a valid key.
-                </div>
-              </div>
+                  <div class="col-12 SimulstreamEnabled">
+                      <label for="youtube-streamkey" class="form-label">YouTube Stream Key</label>
+                      <div class="input-group has-validation">
+                          <input type="password" class="form-control" id="youtube-streamkey" placeholder="YouTube Stream Key"
+                                 required="" onblur="save()">
+                          <div class="invalid-feedback">
+                              YouTube key required.
+                          </div>
+                      </div>
+                  </div>
 
-              <div class="col-12 SimulstreamEnabled">
-                <label for="shorts-filter" class="form-label">YouTube Shorts Filter</label>
-                <textarea class="form-control" id="shorts-filter" style="width:100%;height:400px;" onblur="save()">
+                  <div class="col-12 SimulstreamEnabled">
+                      <label for="twitch-streamkey" class="form-label">Twitch Stream Key</label>
+                      <input type="password" class="form-control" id="twitch-streamkey" placeholder="Twitch StreamKey"
+                             onblur="save()">
+                      <div class="invalid-feedback">
+                          Please enter a valid key.
+                      </div>
+                  </div>
+
+                  <div class="col-12 SimulstreamEnabled">
+                      <label for="shorts-streamkey" class="form-label">YouTube Shorts Stream Key</label>
+                      <input type="password" class="form-control" id="shorts-streamkey" placeholder="YouTube Shorts StreamKey"
+                             onblur="save()">
+                      <div class="invalid-feedback">
+                          Please enter a valid key.
+                      </div>
+                  </div>
+
+                  <div class="col-12 SimulstreamEnabled">
+                      <label for="shorts-filter" class="form-label">YouTube Shorts Filter</label>
+                      <textarea class="form-control" id="shorts-filter" style="width:100%;height:400px;" onblur="save()">
 [0]copy [pip]; 
 [pip]crop=x=102:y=71:w=433:h=65 [small];
 [small]scale=-1:-1[small];
@@ -356,14 +400,14 @@
 [image]scale=-1:960
                               </textarea>
 
-                <div class="invalid-feedback">
-                  Please enter a valid key.
-                </div>
-              </div>
+                      <div class="invalid-feedback">
+                          Please enter a valid key.
+                      </div>
+                  </div>
 
 
-              <!-- <a href="javascript:void" class="w-100 btn btn-primary btn-lg" onclick="save();">Save</a> -->
-          </form>
+                  <!-- <a href="javascript:void" class="w-100 btn btn-primary btn-lg" onclick="save();">Save</a> -->
+</form>
         </div>
       </div>
       <div class="col-md-7 col-lg-8" id="tos">

@@ -49,6 +49,12 @@ namespace StreamArtist.Services
 
         private async Task HandleAuthCallback(HttpContext context)
         {
+            var scopeExists = context.Request.QuerystringExists("code",false);
+            if (!scopeExists)
+            {
+                context.Response.StatusCode = 500;
+                return;
+            }
             string code = context.Request.QuerystringEntries["code"];
             if (!string.IsNullOrEmpty(code))
             {
