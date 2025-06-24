@@ -10,6 +10,7 @@ using System.Timers;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using StreamArtist.Services;
+using Microsoft.Maui.ApplicationModel;
 using StreamArtist.Domain;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
@@ -176,7 +177,7 @@ namespace StreamArtist.Controllers
                 if (e.Url.StartsWith("csharp://send-gift/"))
                 {
                     var p = System.Web.HttpUtility.ParseQueryString(e.Url.Split('?')[1]);
-                    OnSendGift(p["name"],p["message"], float.Parse(p["amount"]));
+                    OnSendGift(p["name"], p["message"], float.Parse(p["amount"]));
 
                     return;
                 }
@@ -195,6 +196,11 @@ namespace StreamArtist.Controllers
                 if (e.Url.StartsWith("csharp://document-loaded"))
                 {
                     OnDocumentLoaded();
+                    return;
+                }
+                if (e.Url.StartsWith("csharp://open-logs-directory"))
+                {
+                    Launcher.OpenAsync("file://" + LoggingService.Instance.LogDirectory); //(new LauncherOptions { Uri = new Uri(LoggingService.Instance.LogDirectory });
                     return;
                 }
             }

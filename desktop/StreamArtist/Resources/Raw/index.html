@@ -149,6 +149,11 @@
       window.location.href = url;
     }
 
+    function openLogsDirectory() {
+      var url = 'csharp://open-logs-directory';
+      window.location.href = url;
+    }
+
     function log(txt) {
       //document.getElementById("log").value = document.getElementById("log").value + "\n" + txt;
     }
@@ -303,7 +308,8 @@
               </div></td>
             </tr>
           </table>
-
+            <br />
+            <a href="javascript:void(0)" onclick="openLogsDirectory()">Open Logs Directory</a>
           
           
           
