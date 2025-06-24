@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using StreamArtistLib.Services;
 using ObsWebSocket.Net;
+using StreamArtist.Services;
 
 namespace StreamArtistLib.Services
 {
@@ -37,40 +39,40 @@ namespace StreamArtistLib.Services
 
         private void Obs_OnConnected()
         {
-            Debug.WriteLine("Connected to OBS");
+            //LoggingService.Instance.Log("Connected to OBS");
         }
 
         private void Obs_OnConnectionFailed(Exception exception)
         {
-            Debug.WriteLine(exception.ToString());
+            LoggingService.Instance.Log(exception.ToString());
         }
 
         public void Connect()
         {
             try
             {
-                Debug.WriteLine("Connecting to OBS WebSocket...");
+                //LoggingService.Instance.Log("Connecting to OBS WebSocket...");
                 obs.Connect();
-                Debug.WriteLine("Successfully connected to OBS WebSocket.");
+                //LoggingService.Instance.Log("Successfully connected to OBS WebSocket.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to connect to OBS: {ex.Message}");
+                LoggingService.Instance.Log($"Failed to connect to OBS: {ex.Message}");
             }
         }
 
         public void SwitchScene(string sceneName)
         {
-            Debug.WriteLine($"Attempting to switch OBS scene to: {sceneName}");
+            LoggingService.Instance.Log($"Attempting to switch OBS scene to: {sceneName}");
             try
             {
                 
                 obs.SetCurrentProgramScene(sceneName);
-                Debug.WriteLine($"Successfully switched OBS scene to: {sceneName}");
+                LoggingService.Instance.Log($"Successfully switched OBS scene to: {sceneName}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to switch scene to {sceneName}: {ex.Message}");
+                LoggingService.Instance.Log($"Failed to switch scene to {sceneName}: {ex.Message}");
             }
         }
 
@@ -81,14 +83,14 @@ namespace StreamArtistLib.Services
         {
             try
             {
-                Debug.WriteLine("Disconnecting from OBS WebSocket...");
+                LoggingService.Instance.Log("Disconnecting from OBS WebSocket...");
                 //obs.Disconnect();
                 obs.Close();
-                Debug.WriteLine("Successfully disconnected from OBS WebSocket.");
+                //LoggingService.Instance.Log("Successfully disconnected from OBS WebSocket.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to disconnect from OBS: {ex.Message}");
+                LoggingService.Instance.Log($"Failed to disconnect from OBS: {ex.Message}");
             }
         }
     }

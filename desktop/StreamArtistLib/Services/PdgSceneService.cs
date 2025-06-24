@@ -107,11 +107,11 @@ namespace StreamArtistLib.Services
                 }
             } else
             {
-                LoggingService.Instance.Log("No chats");
+                //LoggingService.Instance.Log("No chats");
             }
             //if (true && !sceneOverride)
             //if (!sceneOverride && chats != null && chats.Any(chat => chat.IsSuperChat))
-            if (!sceneOverride && chats != null && chats.Any(chat => true))
+            if (!sceneOverride && chats != null && chats.Count > 0)
             {
                 sceneOverride = true;
                 sceneTimer.Stop();
