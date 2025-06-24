@@ -80,32 +80,41 @@ namespace StreamArtistLib.Services
                 return;
             }
 
+            var localMessages = await youTubeChatService.GetNewLocalChatMessages();
+
             var channelId = await youTubeChatService.GetConnectedChannelId();
-            if (string.IsNullOrEmpty(channelId))
+            if (localMessages.Count == 0 && string.IsNullOrEmpty(channelId))
             {
                 LoggingService.Instance.Log("Unable to get connected channel ID.");
                 return;
             }
 
             var streams = await youTubeChatService.GetLiveStreams(channelId);
-            if (streams == null || streams.Count == 0)
+            if (localMessages.Count == 0 && (streams == null || streams.Count == 0))
             {
                 LoggingService.Instance.Log("No active live streams found.");
                 return;
             } else
             {
-                LoggingService.Instance.Log("Looking at video " + streams[0].VideoId);
+                //LoggingService.Instance.Log("Looking at video " + streams[0].VideoId);
             }
 
-            var chats = await youTubeChatService.GetNewChatMessages(streams[0].VideoId);
+            List<ChatMessage> chats = null;
+            if (streams.Count > 0)
+            {
+                chats = await youTubeChatService.GetNewChatMessages(streams[0].VideoId);
+                chats.AddRange(localMessages);
+            } else { chats = localMessages; }
+
             if (chats.Count > 0)
             {
                 LoggingService.Instance.Log("Got chats");
-                foreach(var chat in chats)
+                foreach (var chat in chats)
                 {
                     LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
                 }
-            } else
+            }
+            else
             {
                 //LoggingService.Instance.Log("No chats");
             }

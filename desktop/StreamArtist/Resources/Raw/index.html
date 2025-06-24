@@ -17,6 +17,9 @@
     .OverlayEffectsEnabled {
         display:none;
     }
+    .ArEffectsEnabled {
+      display: none;
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -165,6 +168,19 @@
             document.head.appendChild(Style);
         }
 
+        var ArEffectsEnabled = flagValue("ArEffectsEnabled");
+        if (ArEffectsEnabled) {
+            var els = document.querySelectorAll(".EffectsElements");
+            els.forEach(function(el) {
+                el.classList.remove("OverlayEffectsEnabled");
+                el.classList.add("ArEffectsEnabled");
+            });
+
+            var Style = document.createElement('style');
+            Style.innerHTML = '.ArEffectsEnabled {display:inherit }';
+            document.head.appendChild(Style);
+        }
+
     }
 
   </script>
@@ -266,8 +282,8 @@
             </tr>
           </table>
           <br/><br/>
-          <h4 class="mb-3 OverlayEffectsEnabled">Effects</h4>
-          <table class="OverlayEffectsEnabled">
+          <h4 class="mb-3 OverlayEffectsEnabled EffectsElements">Effects</h4>
+          <table class="OverlayEffectsEnabled EffectsElements">
             <tr>
               <td>Name</td>
               <td><input type="text" id="effects-name" value="Joel"/></td>
@@ -287,6 +303,8 @@
               </div></td>
             </tr>
           </table>
+
+          
           
           
           <textarea id="log" style="height:1000px;width:800px;display:none;"></textarea>
