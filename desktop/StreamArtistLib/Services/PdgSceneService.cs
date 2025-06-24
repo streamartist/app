@@ -24,9 +24,9 @@ namespace StreamArtistLib.Services
         private string defaultScene;
         private int currentSceneIndex = 0;
         private bool sceneOverride = false;
-        private const int SCENE_DURATION = 10000; // 10 seconds
+        private const int SCENE_DURATION = 30000; // 30 seconds
+        private bool joelSaysHiUsed = false;
 
-        private bool debuggerOn = false;
 
         public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService)
         {
@@ -65,10 +65,6 @@ namespace StreamArtistLib.Services
 
         public async Task Update()
         {
-            // TODO: Don't forget to remove *******************************************************************
-            //if (debuggerOn) return;
-
-            debuggerOn = true;
             if (scenes == null || scenes.Count <= 1) // Need at least two scenes (default + one other)
             {
                 LoggingService.Instance.Log("Not enough scenes configured. Check your settings.");
@@ -85,7 +81,7 @@ namespace StreamArtistLib.Services
             var channelId = await youTubeChatService.GetConnectedChannelId();
             if (localMessages.Count == 0 && string.IsNullOrEmpty(channelId))
             {
-                LoggingService.Instance.Log("Unable to get connected channel ID.");
+                LoggingService.Instance.Log("No channels found.");
                 return;
             }
 
@@ -106,21 +102,21 @@ namespace StreamArtistLib.Services
                 chats.AddRange(localMessages);
             } else { chats = localMessages; }
 
+            var liveTestChat = false;
             if (chats.Count > 0)
             {
                 LoggingService.Instance.Log("Got chats");
                 foreach (var chat in chats)
                 {
+                    if (chat.Message == "joelsayshi" && !joelSaysHiUsed)
+                    {
+                        liveTestChat = true;
+                        joelSaysHiUsed = true;
+                    }
                     LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
                 }
             }
-            else
-            {
-                //LoggingService.Instance.Log("No chats");
-            }
-            //if (true && !sceneOverride)
-            //if (!sceneOverride && chats != null && chats.Any(chat => chat.IsSuperChat))
-            if (!sceneOverride && chats != null && chats.Count > 0)
+            if (!sceneOverride && chats != null && (liveTestChat || chats.Any(chat => chat.IsSuperChat)))
             {
                 sceneOverride = true;
                 sceneTimer.Stop();
