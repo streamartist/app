@@ -123,7 +123,10 @@ namespace StreamArtist.Services
                     {
                         AuthorName = message.AuthorDetails.DisplayName,
                         Message = message.Snippet.DisplayMessage,
+                        // Add memberMilestoneChatEvent 
                         IsSuperChat = message.Snippet.Type == "superChatEvent",
+                        IsChannelMembership = message.Snippet.Type == "newSponsorEvent" || message.Snippet.Type == "membershipGiftingEvent",
+                        IsSuperSticker = message.Snippet.Type == "superStickerEvent",
                         Amount = (double) (message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros/1000000 :0),
                         DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
                         USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency,(double) message.Snippet.SuperChatDetails?.AmountMicros/1000000) :0)
@@ -220,13 +223,15 @@ namespace StreamArtist.Services
             return liveStreams;
         }
 
-        public void AddLocalChatMessage(string authorName, string message, bool isSuperChat = false, double amount = 0)
+        public void AddLocalChatMessage(string authorName, string message, bool isSuperChat = false, double amount = 0, bool isChannelMembership = false, bool isSuperSticker = false)
         {
             var ChatMessage = new ChatMessage
             {
                 AuthorName = authorName,
                 Message = message,
                 IsSuperChat = isSuperChat,
+                IsChannelMembership = isChannelMembership,
+                IsSuperSticker = isSuperSticker,
                 Amount = amount,
                 USDAmount = amount,
                 DisplayAmount = "$" + amount.ToString()
