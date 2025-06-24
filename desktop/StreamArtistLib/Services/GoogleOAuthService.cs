@@ -74,8 +74,20 @@ namespace StreamArtist.Services
 
         protected virtual async void OnAuthComplete()
         {
-            await ExchangeCodeForTokenAsync();
-            AuthComplete?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                await ExchangeCodeForTokenAsync();
+            }
+            catch (Exception ex)
+            {
+                // TODO: Deal with this better.
+                Console.WriteLine($"Error exchanging authorization code for token: {ex.Message}");
+                LoggingService.Instance.Log($"Error exchanging authorization code for token: {ex.Message}");
+            }
+            finally
+            {
+                AuthComplete?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public async Task<string> GetAccessToken()
@@ -85,8 +97,9 @@ namespace StreamArtist.Services
                 return _settingsService.GetGoogleAccessToken();
             }
 
-            var refreshedToken = await RefreshAccessTokenAsync();
-            return refreshedToken ?? await ExchangeCodeForTokenAsync();
+            // If the access token is expired, we must refresh it.
+            // If we can't refresh, we'll return null, and the user will need to re-authenticate.
+            return await RefreshAccessTokenAsync();
         }
 
         private readonly SettingsService _settingsService;
@@ -101,8 +114,6 @@ namespace StreamArtist.Services
         private async Task<string> RefreshAccessTokenAsync()
         {
             string RefreshToken = _settingsService.GetGoogleRefreshToken();
-
-            var code = _settingsService.GetGoogleOAuthToken();
 
             if (string.IsNullOrEmpty(RefreshToken))
             {
@@ -180,8 +191,6 @@ namespace StreamArtist.Services
             {
                 var Response = await Client.PostAsync("https://oauth2.googleapis.com/token", Content);
                 var ResponseString = await Response.Content.ReadAsStringAsync();
-
-                ResponseString = await Response.Content.ReadAsStringAsync();
                 return ResponseString;
             }
         }

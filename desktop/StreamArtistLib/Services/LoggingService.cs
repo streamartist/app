@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace StreamArtist.Services
@@ -11,9 +12,13 @@ namespace StreamArtist.Services
 
         private LoggingService(string logDirectory = "Logs")
         {
-            _logDirectory = logDirectory;
+            string binaryPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string binaryDir = System.IO.Path.GetDirectoryName(binaryPath);
+            _logDirectory = Path.Combine(binaryDir, "logs");
             Directory.CreateDirectory(_logDirectory);
         }
+
+        public string LogDirectory { get { return _logDirectory; } }
 
         public static LoggingService Instance
         {
@@ -35,12 +40,24 @@ namespace StreamArtist.Services
 
         public void Log(string message)
         {
-            string fileName = $"{DateTime.Now:yyyy-MM-dd}.log";
-            string fullPath = Path.Combine(_logDirectory, fileName);
+            lock (_lock)
+            {
+                try
+                {
+                    Debug.WriteLine(message);
+                    string fileName = $"{DateTime.Now:yyyy-MM-dd}.log";
+                    string fullPath = Path.Combine(_logDirectory, fileName);
 
-            string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
+                    string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
 
-            File.AppendAllText(fullPath, logEntry + Environment.NewLine);
+                    File.AppendAllText(fullPath, logEntry + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    // Avoid crashing the app if logging fails.
+                    Debug.WriteLine($"Failed to write to log file: {ex.Message}");
+                }
+            }
         }
     }
 }

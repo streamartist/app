@@ -54,12 +54,12 @@ namespace StreamArtistLib.Services
                 }
                 else
                 {
-                    Debug.WriteLine("No scenes found in settings.");
+                    LoggingService.Instance.Log("No scenes found in settings.");
                 }
             }
             else
             {
-                Debug.WriteLine("obs-scenes setting is empty or not found.");
+                LoggingService.Instance.Log("obs-scenes setting is empty or not found.");
             }
         }
 
@@ -71,39 +71,43 @@ namespace StreamArtistLib.Services
             debuggerOn = true;
             if (scenes == null || scenes.Count <= 1) // Need at least two scenes (default + one other)
             {
-                Debug.WriteLine("Not enough scenes configured. Check your settings.");
+                LoggingService.Instance.Log("Not enough scenes configured. Check your settings.");
                 return;
             }
 
             if (obsService == null) {
-                Debug.WriteLine("ObsService is null");
+                LoggingService.Instance.Log("ObsService is null");
                 return;
             }
 
             var channelId = await youTubeChatService.GetConnectedChannelId();
             if (string.IsNullOrEmpty(channelId))
             {
-                Debug.WriteLine("Unable to get connected channel ID.");
+                LoggingService.Instance.Log("Unable to get connected channel ID.");
                 return;
             }
 
             var streams = await youTubeChatService.GetLiveStreams(channelId);
             if (streams == null || streams.Count == 0)
             {
-                Debug.WriteLine("No active live streams found.");
+                LoggingService.Instance.Log("No active live streams found.");
                 return;
             } else
             {
-                Debug.WriteLine("Looking at video " + streams[0].VideoId);
+                LoggingService.Instance.Log("Looking at video " + streams[0].VideoId);
             }
 
             var chats = await youTubeChatService.GetNewChatMessages(streams[0].VideoId);
             if (chats.Count > 0)
             {
-                Debug.WriteLine("Got chats");
+                LoggingService.Instance.Log("Got chats");
+                foreach(var chat in chats)
+                {
+                    LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
+                }
             } else
             {
-                Debug.WriteLine("No chats");
+                LoggingService.Instance.Log("No chats");
             }
             //if (true && !sceneOverride)
             //if (!sceneOverride && chats != null && chats.Any(chat => chat.IsSuperChat))
@@ -121,7 +125,7 @@ namespace StreamArtistLib.Services
             currentSceneIndex = (currentSceneIndex + 1) % (scenes.Count - 1);
             if (currentSceneIndex == 0) { currentSceneIndex = 1; }
             var nextScene = scenes[currentSceneIndex];
-            Debug.WriteLine($"Switching to scene: {nextScene}");
+            LoggingService.Instance.Log($"Switching to scene: {nextScene}");
             obsService.SwitchScene(nextScene);
         }
 

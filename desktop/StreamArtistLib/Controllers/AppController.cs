@@ -48,6 +48,7 @@ namespace StreamArtist.Controllers
         {
             SettingsController.LoadGoogleSignInStatus();
             WebServerService.StartLocalServer();
+            LoggingService.Instance.Log("Starting log.");
 
             var settings = _settingsService.GetSettings();
             if (int.TryParse(settings["obs-port"], out int port))
