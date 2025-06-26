@@ -1,6 +1,7 @@
 
 using StreamArtist.Services;
 using System;
+using System.Windows.Forms; // Required for MethodInvoker
 
 namespace StreamArtist.Controllers{
 public class SettingsController
@@ -29,7 +30,11 @@ public class SettingsController
 
     private void OnGoogleAuthComplete(object sender, EventArgs e)
     {
-        LoadGoogleSignInStatus();
+        // The AuthComplete event is likely raised on a background thread by WatsonWebserver.
+        // UI operations must be marshaled to the UI thread.
+        _appController.MainView.Invoke((MethodInvoker)delegate {
+            LoadGoogleSignInStatus();
+        });
     }
 
     public async void LoadGoogleSignInStatus() {

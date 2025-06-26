@@ -1,12 +1,13 @@
+//using Microsoft.Maui.ApplicationModel;
+using StreamArtist.Domain;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
-using System.Collections.Generic;
-using System.Net.Http;
-using System;
 using WatsonWebserver;
-using Microsoft.Maui.ApplicationModel;
-using StreamArtist.Domain;
 
 namespace StreamArtist.Services
 {
@@ -30,7 +31,13 @@ namespace StreamArtist.Services
             StartLocalServer();
 
             string authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={ClientId}&redirect_uri={RedirectUri}&response_type=code&scope={Scope}&access_type=offline";
-            await Browser.OpenAsync(authorizationUrl, BrowserLaunchMode.SystemPreferred);
+            //await Browser.OpenAsync(authorizationUrl, BrowserLaunchMode.SystemPreferred);
+            Process myProcess = new Process();
+
+            // true is the default, but it is important not to set it to false
+            myProcess.StartInfo.UseShellExecute = true;
+            myProcess.StartInfo.FileName = authorizationUrl;
+            myProcess.Start();
         }
 
         private void StartLocalServer()
@@ -49,7 +56,7 @@ namespace StreamArtist.Services
 
         private async Task HandleAuthCallback(HttpContext context)
         {
-            var scopeExists = context.Request.QuerystringExists("code",false);
+            var scopeExists = context.Request.QuerystringExists("code", false);
             if (!scopeExists)
             {
                 context.Response.StatusCode = 500;

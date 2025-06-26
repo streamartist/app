@@ -1,15 +1,14 @@
-﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using StreamArtistLib.Services;
 using ObsWebSocket.Net;
 using StreamArtist.Services;
 
-namespace StreamArtistLib.Services
+namespace StreamArtist.Services
 {
     public class OBSService
     {

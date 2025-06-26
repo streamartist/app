@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Timers;
 using StreamArtist.Domain;
 using StreamArtist.Services;
-using StreamArtistLib.Services;
+using Timer = System.Timers.Timer;
 
-namespace StreamArtistLib.Services
+namespace StreamArtist.Services
 {
     // TODO: Update this to refactor domain code out. gemini just
     // shoved everything in here.

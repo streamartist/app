@@ -3,35 +3,27 @@
 
 using System;
 using System.Diagnostics;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.IO;
-using System.Timers;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
 using StreamArtist.Services;
-using Microsoft.Maui.ApplicationModel;
-using StreamArtist.Domain;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Dispatching;
 using System.Threading.Tasks;
-using StreamArtistLib.Services;
+using Microsoft.Web.WebView2.WinForms;
+using System.Timers;
+using System.Text.Json;
+using StreamArtist.Domain;
 
 namespace StreamArtist.Controllers
 {
     public class AppController
     {
-        private WebView MainView;
+        internal WebView2 MainView;
         public SettingsController SettingsController;
         public WebServerService WebServerService = new WebServerService();
-
         private readonly NetworkService _networkService = new NetworkService();
         private readonly SettingsService _settingsService = new SettingsService();
 
         private readonly YouTubeChatService youTubeChatService = new YouTubeChatService();
 
         private PdgSceneService _pdgSceneService;
-        private Timer _timer;
+        private System.Timers.Timer _timer;
 
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
         string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter","obs-password","obs-port"];
@@ -39,7 +31,7 @@ namespace StreamArtist.Controllers
 
 
         // Add constructor
-        public AppController(WebView webView)
+        public AppController(WebView2 webView)
         {
             MainView = webView;
             SettingsController = new SettingsController(this);
@@ -160,47 +152,51 @@ namespace StreamArtist.Controllers
             UpdateStatusUI(result);
         }
 
-        public void OnWebViewEvent(object sender, WebNavigatingEventArgs e)
+        public void OnWebViewEvent(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
         {
-            if (e.Url.StartsWith("csharp://"))
+            if (e.Uri.StartsWith("csharp://"))
             {
                 e.Cancel = true; // Cancel the navigation
 
-                if (e.Url.StartsWith("csharp://save-settings/"))
+                if (e.Uri.StartsWith("csharp://save-settings/"))
                 {
-                    var p = System.Web.HttpUtility.ParseQueryString(e.Url.Split('?')[1]);
+                    var p = System.Web.HttpUtility.ParseQueryString(e.Uri.Split('?')[1]);
                     OnSave(p["values"]);
 
                     return;
                 }
 
-                if (e.Url.StartsWith("csharp://send-gift/"))
+                if (e.Uri.StartsWith("csharp://send-gift/"))
                 {
-                    var p = System.Web.HttpUtility.ParseQueryString(e.Url.Split('?')[1]);
+                    var p = System.Web.HttpUtility.ParseQueryString(e.Uri.Split('?')[1]);
                     OnSendGift(p["name"], p["message"], float.Parse(p["amount"]));
 
                     return;
                 }
 
-                if (e.Url.StartsWith("csharp://start"))
+                if (e.Uri.StartsWith("csharp://start"))
                 {
                     OnStart();
                     return;
                 }
 
-                if (e.Url.StartsWith("csharp://connect-youtube"))
+                if (e.Uri.StartsWith("csharp://connect-youtube"))
                 {
                     SettingsController.OnGoogleSignInClicked();
                     return;
                 }
-                if (e.Url.StartsWith("csharp://document-loaded"))
+                if (e.Uri.StartsWith("csharp://document-loaded"))
                 {
                     OnDocumentLoaded();
                     return;
                 }
-                if (e.Url.StartsWith("csharp://open-logs-directory"))
+                if (e.Uri.StartsWith("csharp://open-logs-directory"))
                 {
-                    Launcher.OpenAsync("file://" + LoggingService.Instance.LogDirectory); //(new LauncherOptions { Uri = new Uri(LoggingService.Instance.LogDirectory });
+                    //Launcher.OpenAsync("file://" + LoggingService.Instance.LogDirectory); //(new LauncherOptions { Uri = new Uri(LoggingService.Instance.LogDirectory });
+                    Process myProcess = new Process();
+                    myProcess.StartInfo.UseShellExecute = true;
+                    myProcess.StartInfo.FileName = "file://" + LoggingService.Instance.LogDirectory;
+                    myProcess.Start();
                     return;
                 }
             }
@@ -222,11 +218,13 @@ namespace StreamArtist.Controllers
             {
                 throw new Exception("Can't have newlines in javascript");
             }
-            return MainView.Dispatcher.DispatchAsync(() =>
-            {
-                Debug.WriteLine($"JS => {code}");
-                return MainView.EvaluateJavaScriptAsync(code);
-            });
+            Debug.WriteLine($"JS => {code}");
+            return MainView.ExecuteScriptAsync(code);
+                //MainView.Dispatcher.DispatchAsync(() =>
+            //{
+                
+            //    return MainView.EvaluateJavaScriptAsync(code);
+            //});
         }
 
         public void OnSendGift(string name, string message, double amount)
@@ -255,46 +253,47 @@ namespace StreamArtist.Controllers
 
 
 
-        public async void LoadHtml()
-        {
+        //public async void LoadHtml()
+        //{
 
-            using var stream = await FileSystem.OpenAppPackageFileAsync("index.html");
+        //    using var stream = await FileSystem.OpenAppPackageFileAsync("index.html");
 
-            using var reader = new StreamReader(stream);
+        //    using var reader = new StreamReader(stream);
 
-            var contents = reader.ReadToEnd();
-            // Note the space after the comment. File formatter
-            // wants this.
-            contents = contents.Replace("{/*fieldValues*/ }", JsonSerializer.Serialize(GetSettings()));
+        //    var contents = reader.ReadToEnd();
+        //    // Note the space after the comment. File formatter
+        //    // wants this.
+        //    contents = contents.Replace("{/*fieldValues*/ }", JsonSerializer.Serialize(GetSettings()));
 
-            contents = contents.Replace("{/*flags*/ }", JsonSerializer.Serialize(FlagService.GetFlags()));
+        //    contents = contents.Replace("{/*flags*/ }", JsonSerializer.Serialize(FlagService.GetFlags()));
 
-            HtmlWebViewSource source = new HtmlWebViewSource
-            {
-                Html = contents,
-            };
-            MainView.Source = source;
-            MainView.EvaluateJavaScriptAsync(@"
-            updateStatus('Waiting...');
-        ");
-        }
+        //    HtmlWebViewSource source = new HtmlWebViewSource
+        //    {
+        //        Html = contents,
+        //    };
+        //    MainView.Source = source;
+        //    MainView.EvaluateJavaScriptAsync(@"
+        //    updateStatus('Waiting...');
+        //");
+        //}
 
         private string GetBaseUrl()
         {
-            if (DeviceInfo.Platform == DevicePlatform.WinUI)
-            {
-                return $"ms-appx-web:///Resources/Raw/";
-            }
-            else if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
-            {
-                var basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Resources), "Raw");
-                return $"file://{basePath}/";
-            }
-            else
-            {
-                // Assuming this covers Android and iOS
-                return $"file:///android_asset/";
-            }
+            //if (DeviceInfo.Platform == DevicePlatform.WinUI)
+            //{
+            //    return $"ms-appx-web:///Resources/Raw/";
+            //}
+            //else if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+            //{
+            //    var basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Resources), "Raw");
+            //    return $"file://{basePath}/";
+            //}
+            //else
+            //{
+            // Assuming this covers Android and iOS
+            //return $"file:///android_asset/";
+            //}
+            return "";
         }
     }
 }

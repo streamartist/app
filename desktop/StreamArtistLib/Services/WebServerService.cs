@@ -4,7 +4,7 @@ using System.Web;
 using System.IO;
 using System.Collections.Generic;
 using StreamArtist.Domain;
-using Microsoft.Maui.Storage;
+//using Microsoft.Maui.Storage;
 using WatsonWebserver;
 using System.Threading.Tasks;
 
@@ -89,10 +89,11 @@ namespace StreamArtist.Services
             // Fire from https://www.vecteezy.com/video/10366199-fire-frame-loop-effect-burning-background-with-fire-abstract-background-seamless-loop-fire-burn-flame-energy-4k
 
             // Default serving path.
-            using var stream = await FileSystem.OpenAppPackageFileAsync("animator.html");
-            using var reader = new StreamReader(stream);
-            var contents = reader.ReadToEnd();
-            await context.Response.Send(contents);
+            // TODO: fix when bringing back this feature.
+            //using var stream = await FileSystem.OpenAppPackageFileAsync("animator.html");
+            //using var reader = new StreamReader(stream);
+            //var contents = reader.ReadToEnd();
+            //await context.Response.Send(contents);
         }
 
         private async Task<string> GetFile(HttpRequest request)
@@ -103,98 +104,100 @@ namespace StreamArtist.Services
             {
                 return "";
             }
-            using var stream = await FileSystem.OpenAppPackageFileAsync(file);
-            using var reader = new StreamReader(stream);
-            var contents = reader.ReadToEnd();
-            return contents;
+            // TODO: fix
+            //using var stream = await FileSystem.OpenAppPackageFileAsync(file);
+            //using var reader = new StreamReader(stream);
+            //var contents = reader.ReadToEnd();
+            //return contents;
+            return "";
         }
 
         static async Task SendVideo(HttpContext ctx)
         {
-            var request = ctx.Request;
-            var p = System.Web.HttpUtility.ParseQueryString(request.FullUrl.Split('?')[1]);
-            string file = p["file"];
-            if (file == null)
-            {
-                return;
-            }
-            // var dir = FileSystem.CacheDirectory;
-            // file = dir + "\\" + file;
-            Console.WriteLine("- User requested mp4 " + file);
-            ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "video/mp4";
-            ctx.Response.ChunkedTransfer = true;
-            ctx.Response.Headers.Add("Cache-Control", "no-cache");
-            ctx.Response.Headers.Add("Content-Disposition", "attachment; filename=\"video.mp4\"");
+            //var request = ctx.Request;
+            //var p = System.Web.HttpUtility.ParseQueryString(request.FullUrl.Split('?')[1]);
+            //string file = p["file"];
+            //if (file == null)
+            //{
+            //    return;
+            //}
+            //// var dir = FileSystem.CacheDirectory;
+            //// file = dir + "\\" + file;
+            //Console.WriteLine("- User requested mp4 " + file);
+            //ctx.Response.StatusCode = 200;
+            //ctx.Response.ContentType = "video/mp4";
+            //ctx.Response.ChunkedTransfer = true;
+            //ctx.Response.Headers.Add("Cache-Control", "no-cache");
+            //ctx.Response.Headers.Add("Content-Disposition", "attachment; filename=\"video.mp4\"");
 
 
 
-            // long fileSize = new F?ileInfo(file).Length;
-            // Console.WriteLine("Sending file of size " + fileSize + " bytes");
+            //// long fileSize = new F?ileInfo(file).Length;
+            //// Console.WriteLine("Sending file of size " + fileSize + " bytes");
 
-            long bytesSent = 0;
-            // 50,294,153 bytes needed.
-            // 50,294,153 sent.
+            //long bytesSent = 0;
+            //// 50,294,153 bytes needed.
+            //// 50,294,153 sent.
 
-            using (var fs = await FileSystem.OpenAppPackageFileAsync(file))
+            //using (var fs = await FileSystem.OpenAppPackageFileAsync(file))
 
-            // using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read))
-            {
+            //// using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read))
+            //{
 
-                byte[] buffer = new byte[16384];
-                // long bytesRemaining = fileSize;
+            //    byte[] buffer = new byte[16384];
+            //    // long bytesRemaining = fileSize;
 
-                while (true)
-                {
-                    // Thread.Sleep(500);
-                    int bytesRead = await fs.ReadAsync(buffer, 0, buffer.Length);
+            //    while (true)
+            //    {
+            //        // Thread.Sleep(500);
+            //        int bytesRead = await fs.ReadAsync(buffer, 0, buffer.Length);
 
-                    if (bytesRead == 0)
-                    {
-                        break;
-                    }
+            //        if (bytesRead == 0)
+            //        {
+            //            break;
+            //        }
 
-                    // bytesRemaining -= bytesRead;
+            //        // bytesRemaining -= bytesRead;
 
-                    // TODO: What if this is perfectly on the boundary? 
-                    // Check filestream.Length perhaps.
-                    if (bytesRead == 16384)
-                    {
-                        Console.WriteLine("- Sending chunk of size " + bytesRead);
+            //        // TODO: What if this is perfectly on the boundary? 
+            //        // Check filestream.Length perhaps.
+            //        if (bytesRead == 16384)
+            //        {
+            //            Console.WriteLine("- Sending chunk of size " + bytesRead);
 
-                        if (bytesRead == buffer.Length)
-                        {
-                            await ctx.Response.SendChunk(buffer);
-                        }
-                        else
-                        {
-                            byte[] temp = new byte[bytesRead];
-                            Buffer.BlockCopy(buffer, 0, temp, 0, bytesRead);
-                            await ctx.Response.SendChunk(temp);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("- Sending final chunk of size " + bytesRead);
+            //            if (bytesRead == buffer.Length)
+            //            {
+            //                await ctx.Response.SendChunk(buffer);
+            //            }
+            //            else
+            //            {
+            //                byte[] temp = new byte[bytesRead];
+            //                Buffer.BlockCopy(buffer, 0, temp, 0, bytesRead);
+            //                await ctx.Response.SendChunk(temp);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            Console.WriteLine("- Sending final chunk of size " + bytesRead);
 
-                        if (bytesRead == buffer.Length)
-                        {
-                            await ctx.Response.SendFinalChunk(buffer);
-                        }
-                        else
-                        {
-                            byte[] temp = new byte[bytesRead];
-                            Buffer.BlockCopy(buffer, 0, temp, 0, bytesRead);
-                            await ctx.Response.SendFinalChunk(temp);
-                        }
-                    }
+            //            if (bytesRead == buffer.Length)
+            //            {
+            //                await ctx.Response.SendFinalChunk(buffer);
+            //            }
+            //            else
+            //            {
+            //                byte[] temp = new byte[bytesRead];
+            //                Buffer.BlockCopy(buffer, 0, temp, 0, bytesRead);
+            //                await ctx.Response.SendFinalChunk(temp);
+            //            }
+            //        }
 
-                    bytesSent += bytesRead;
+            //        bytesSent += bytesRead;
 
-                }
-            }
+            //    }
+            //}
 
-            Console.WriteLine("Sent " + bytesSent + " bytes");
+            //Console.WriteLine("Sent " + bytesSent + " bytes");
             return;
         }
 
