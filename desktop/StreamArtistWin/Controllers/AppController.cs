@@ -1,14 +1,16 @@
 // Controls the basic HTML view.
 
 
+using Microsoft.Web.WebView2.WinForms;
+using StreamArtist.Domain;
+using StreamArtist.Services;
 using System;
 using System.Diagnostics;
-using StreamArtist.Services;
-using System.Threading.Tasks;
-using Microsoft.Web.WebView2.WinForms;
-using System.Timers;
+using System.Reflection;
 using System.Text.Json;
-using StreamArtist.Domain;
+using System.Xml.Linq;
+using System.Windows.Forms;
+using Timer = System.Windows.Forms.Timer;
 
 namespace StreamArtist.Controllers
 {
@@ -23,10 +25,10 @@ namespace StreamArtist.Controllers
         private readonly YouTubeChatService youTubeChatService = new YouTubeChatService();
 
         private PdgSceneService _pdgSceneService;
-        private System.Timers.Timer _timer;
+        private Timer _timer;
 
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
-        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter","obs-password","obs-port"];
+        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port"];
         string[] statusFieldNames = ["status-text", "control-server-status", "streaming-server-status", "control-server-security", "effects-server-status"];
 
 
@@ -54,13 +56,14 @@ namespace StreamArtist.Controllers
                 Debug.WriteLine("OBS port not configured or invalid.");
             }
 
-            _timer = new System.Timers.Timer();
-            _timer.Elapsed += new ElapsedEventHandler(TimerTickEvent);
+            _timer = new Timer();
+            _timer.Tick += TimerTickEvent;
             _timer.Interval = 5000;
             _timer.Enabled = true;
         }
 
-        private async void TimerTickEvent(object source, ElapsedEventArgs e)
+
+        private async void TimerTickEvent(object source, EventArgs e)
         {
             CheckHttpConnection();
 
@@ -69,7 +72,7 @@ namespace StreamArtist.Controllers
                 await _pdgSceneService.Update();
             }
 
-                        // YouTubeChatService youTubeChatService = new YouTubeChatService(_settingsService);
+            // YouTubeChatService youTubeChatService = new YouTubeChatService(_settingsService);
             // var logger = LoggingService.Instance;
 
             // var channelId = await youTubeChatService.GetConnectedChannelId();
@@ -171,6 +174,10 @@ namespace StreamArtist.Controllers
                     var p = System.Web.HttpUtility.ParseQueryString(e.Uri.Split('?')[1]);
                     OnSendGift(p["name"], p["message"], float.Parse(p["amount"]));
 
+
+
+                    
+
                     return;
                 }
 
@@ -192,6 +199,8 @@ namespace StreamArtist.Controllers
                 }
                 if (e.Uri.StartsWith("csharp://open-logs-directory"))
                 {
+                    SettingsController.LoadGoogleSignInStatus();
+
                     //Launcher.OpenAsync("file://" + LoggingService.Instance.LogDirectory); //(new LauncherOptions { Uri = new Uri(LoggingService.Instance.LogDirectory });
                     Process myProcess = new Process();
                     myProcess.StartInfo.UseShellExecute = true;
@@ -220,21 +229,21 @@ namespace StreamArtist.Controllers
             }
             Debug.WriteLine($"JS => {code}");
             return MainView.ExecuteScriptAsync(code);
-                //MainView.Dispatcher.DispatchAsync(() =>
+            //MainView.Dispatcher.DispatchAsync(() =>
             //{
-                
+
             //    return MainView.EvaluateJavaScriptAsync(code);
             //});
         }
 
         public void OnSendGift(string name, string message, double amount)
         {
-            youTubeChatService.AddLocalChatMessage(name,message,true,amount);
+            youTubeChatService.AddLocalChatMessage(name, message, true, amount);
         }
 
         public void OnStart()
         {
-            GoogleOAuthService service =   new GoogleOAuthService();
+            GoogleOAuthService service = new GoogleOAuthService();
             var accessToken = service.GetAccessToken();
             Console.WriteLine("Access token: " + accessToken);
 
@@ -253,29 +262,43 @@ namespace StreamArtist.Controllers
 
 
 
-        //public async void LoadHtml()
-        //{
+        public async void LoadHtml()
+        {
+            // Get the assembly containing the embedded resource
+            Assembly assembly = Assembly.GetExecutingAssembly();
 
-        //    using var stream = await FileSystem.OpenAppPackageFileAsync("index.html");
+            // Add this at the beginning of LoadEmbeddedHtml to debug
+            var names = assembly.GetManifestResourceNames();
+            //MessageBox.Show("Available Resources:\n" + string.Join("\n", names));
 
-        //    using var reader = new StreamReader(stream);
+            // Get the name of the embedded resource (adjust based on your project structure and file name)
+            // The format is typically: Namespace.Folder.FileName.Extension
+            string resourceName = "StreamArtist.Resources.Raw.index.html";
 
-        //    var contents = reader.ReadToEnd();
-        //    // Note the space after the comment. File formatter
-        //    // wants this.
-        //    contents = contents.Replace("{/*fieldValues*/ }", JsonSerializer.Serialize(GetSettings()));
+            // Read the embedded resource as a stream
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    // Read the HTML content from the stream
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        string htmlContent = reader.ReadToEnd();
 
-        //    contents = contents.Replace("{/*flags*/ }", JsonSerializer.Serialize(FlagService.GetFlags()));
-
-        //    HtmlWebViewSource source = new HtmlWebViewSource
-        //    {
-        //        Html = contents,
-        //    };
-        //    MainView.Source = source;
-        //    MainView.EvaluateJavaScriptAsync(@"
-        //    updateStatus('Waiting...');
-        //");
-        //}
+                        var keys = JsonSerializer.Serialize(GetSettings());
+                        htmlContent = htmlContent.Replace("{/*fieldValues*/ }", keys);
+                        htmlContent = htmlContent.Replace("{/*flags*/ }", JsonSerializer.Serialize(FlagService.GetFlags()));
+                        // Load the HTML content into the WebView2
+                        MainView.NavigateToString(htmlContent);
+                    }
+                }
+                else
+                {
+                    // Handle the case where the resource is not found (e.g., log an error)
+                    MessageBox.Show($"Embedded resource '{resourceName}' not found.");
+                }
+            }
+        }
 
         private string GetBaseUrl()
         {

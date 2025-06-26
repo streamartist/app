@@ -40,7 +40,7 @@ namespace StreamArtist
             // 
             MainView.AllowExternalDrop = true;
             MainView.CreationProperties = null;
-            MainView.DefaultBackgroundColor = System.Drawing.Color.White;
+            MainView.DefaultBackgroundColor = Color.White;
             MainView.Location = new Point(2, 1);
             MainView.Name = "MainView";
             MainView.Size = new Size(1262, 862);
@@ -54,7 +54,7 @@ namespace StreamArtist
             ClientSize = new Size(1266, 868);
             Controls.Add(MainView);
             Name = "Main";
-            Text = "Main";
+            Text = "Stream Artist";
             Load += Main_Load;
             ((System.ComponentModel.ISupportInitialize)MainView).EndInit();
             ResumeLayout(false);
