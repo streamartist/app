@@ -171,6 +171,9 @@ namespace StreamArtist.Controllers
 
                 if (e.Uri.StartsWith("csharp://send-gift/"))
                 {
+                    // ********************************************************************
+                    TimerTickEvent(null, null);
+
                     var p = System.Web.HttpUtility.ParseQueryString(e.Uri.Split('?')[1]);
                     OnSendGift(p["name"], p["message"], float.Parse(p["amount"]));
 

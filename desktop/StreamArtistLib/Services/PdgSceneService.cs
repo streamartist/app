@@ -116,7 +116,7 @@ namespace StreamArtist.Services
                     LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
                 }
             }
-            if (!sceneOverride && chats != null && (liveTestChat || chats.Any(chat => chat.IsSuperChat)))
+            if (!sceneOverride && chats != null && (liveTestChat || chats.Any(chat => (chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership))))
             {
                 sceneOverride = true;
                 sceneTimer.Stop();

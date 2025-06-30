@@ -65,7 +65,8 @@ namespace StreamArtist.Services
             catch (Exception ex)
             {
                 // TODO: error handling.
-                Console.WriteLine($"Error fetching channel name: {ex.Message}");
+                //Console.WriteLine($"Error fetching channel name: {ex.Message}");
+                LoggingService.Instance.Log($"Error fetching channel name: {ex.Message}");
                 return string.Empty;
             }
         }
@@ -124,9 +125,9 @@ namespace StreamArtist.Services
                         AuthorName = message.AuthorDetails.DisplayName,
                         Message = message.Snippet.DisplayMessage,
                         // Add memberMilestoneChatEvent 
-                        IsSuperChat = message.Snippet.Type == "superChatEvent",
-                        IsChannelMembership = message.Snippet.Type == "newSponsorEvent" || message.Snippet.Type == "membershipGiftingEvent",
-                        IsSuperSticker = message.Snippet.Type == "superStickerEvent",
+                        IsSuperChat = message?.Kind.Contains("superChatEvent") == true,
+                        IsChannelMembership = (message?.Kind.Contains("newSponsorEvent")==true || message?.Kind.Contains("membershipGiftingEvent")==true),
+                        IsSuperSticker = message.Kind == "superStickerEvent",
                         Amount = (double) (message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros/1000000 :0),
                         DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
                         USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency,(double) message.Snippet.SuperChatDetails?.AmountMicros/1000000) :0)
@@ -138,6 +139,7 @@ namespace StreamArtist.Services
             }
             catch (Exception ex)
             {
+                LoggingService.Instance.Log(ex.Message);
                 Console.WriteLine($"Error fetching chat messages: {ex.Message}");
             }
 
