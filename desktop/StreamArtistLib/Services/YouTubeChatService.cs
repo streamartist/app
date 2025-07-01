@@ -107,7 +107,7 @@ namespace StreamArtist.Services
                 await SetLiveChatId(videoId);
             }
 
-            LoadState();
+            //LoadState();
 
             var youtubeService = await InitializeYouTubeService();
             var chatMessages = new List<ChatMessage>();
@@ -120,18 +120,24 @@ namespace StreamArtist.Services
                 CurrencyConverter currencyConverter = new CurrencyConverter();
                 foreach (var message in response.Items)
                 {
-                    chatMessages.Add(new ChatMessage
+                    //var json = JsonConvert.SerializeObject(message);
+                    //if (json.Contains("newSponsorEvent"))
+                    //{
+                    //    LoggingService.Instance.Log(json);
+                    //}
+                    var obj = new ChatMessage
                     {
                         AuthorName = message.AuthorDetails.DisplayName,
                         Message = message.Snippet.DisplayMessage,
                         // Add memberMilestoneChatEvent 
-                        IsSuperChat = message?.Kind.Contains("superChatEvent") == true,
-                        IsChannelMembership = (message?.Kind.Contains("newSponsorEvent")==true || message?.Kind.Contains("membershipGiftingEvent")==true),
-                        IsSuperSticker = message.Kind == "superStickerEvent",
-                        Amount = (double) (message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros/1000000 :0),
+                        IsSuperChat = message?.Snippet?.Type?.Contains("superChatEvent") == true,
+                        IsChannelMembership = (message?.Snippet?.Type?.Contains("newSponsorEvent") == true || message?.Snippet?.Type?.Contains("membershipGiftingEvent") == true),
+                        IsSuperSticker = message?.Snippet?.Type == "superStickerEvent",
+                        Amount = (double)(message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros / 1000000 : 0),
                         DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
-                        USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency,(double) message.Snippet.SuperChatDetails?.AmountMicros/1000000) :0)
-                    });
+                        USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency, (double)message.Snippet.SuperChatDetails?.AmountMicros / 1000000) : 0)
+                    };
+                    chatMessages.Add(obj);
                 }
 
                 _lastPageToken = response.NextPageToken;
