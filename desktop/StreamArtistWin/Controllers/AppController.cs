@@ -58,7 +58,7 @@ namespace StreamArtist.Controllers
 
             _timer = new Timer();
             _timer.Tick += TimerTickEvent;
-            _timer.Interval = 5000;
+            _timer.Interval = 10000;
             _timer.Enabled = true;
         }
 
@@ -70,6 +70,12 @@ namespace StreamArtist.Controllers
             if (_pdgSceneService != null && FlagService.GetFlag(FlagId.ArEffectsEnabled).Value)
             {
                 await _pdgSceneService.Update();
+                _timer.Interval = (int) youTubeChatService.PollingIntervalMillis;
+
+                // *****************************************************************************************************
+                _timer.Enabled = false;
+
+                LoggingService.Instance.Log("Timer is at " + _timer.Interval.ToString());
             }
 
             // YouTubeChatService youTubeChatService = new YouTubeChatService(_settingsService);

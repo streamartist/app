@@ -1,14 +1,22 @@
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
-using Google.Apis.Services;
-using Google.Apis.Auth.OAuth2;
+using Grpc.Core;
+using Newtonsoft.Json;
 using StreamArtist.Domain;
+using StreamArtist.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using StreamArtist.Repositories;
 using System.IO;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
+using static Youtube.Api.V3.V3DataLiveChatMessageService;
+using Grpc.Net.Client;
+using System.Collections.Concurrent;
+using Youtube.Api.V3;
+using System.Diagnostics;
 
 namespace StreamArtist.Services
 {
@@ -19,10 +27,21 @@ namespace StreamArtist.Services
         private string _lastPageToken;
         private const string STATE_FILE = "youtube_chat_state.json";
 
+        // Add event for new chat messages
+        public event Action<ChatMessage> OnChatMessageReceived;
+        private Thread ChatListenerThread;
+        private CancellationTokenSource ChatListenerCts;
+        private string CurrentVideoId;
+        private readonly object ChatListenerLock = new object();
+
         public YouTubeChatService()
         {
             _settingsService = new SettingsService();
+            // Set default value, as per the documentation.
+            PollingIntervalMillis = 1000;
         }
+
+        public long PollingIntervalMillis { get; set; }
 
         private async Task<YouTubeService> InitializeYouTubeService()
         {
@@ -97,7 +116,7 @@ namespace StreamArtist.Services
             }
         }
 
-        
+
 
         public async Task<List<ChatMessage>> GetNewChatMessages(string videoId)
         {
@@ -111,6 +130,7 @@ namespace StreamArtist.Services
 
             var youtubeService = await InitializeYouTubeService();
             var chatMessages = new List<ChatMessage>();
+            LoggingService.Instance.Log("Calling chat per timer.");
             var request = youtubeService.LiveChatMessages.List(_liveChatId, "snippet,authorDetails");
             request.PageToken = _lastPageToken;
 
@@ -118,6 +138,9 @@ namespace StreamArtist.Services
             {
                 var response = await request.ExecuteAsync();
                 CurrencyConverter currencyConverter = new CurrencyConverter();
+
+                this.PollingIntervalMillis = (response.PollingIntervalMillis.HasValue ? response.PollingIntervalMillis.Value : 5000);
+
                 foreach (var message in response.Items)
                 {
                     //var json = JsonConvert.SerializeObject(message);
@@ -153,6 +176,128 @@ namespace StreamArtist.Services
             chatMessages.AddRange(LocalChatRepository.Instance.GetAndRemoveAllChats());
 
             return chatMessages;
+        }
+
+        // Start the background chat listener thread
+        public void StartChatListener(string videoId)
+        {
+            lock (ChatListenerLock)
+            {
+                if (ChatListenerThread != null && ChatListenerThread.IsAlive)
+                {
+                    // Already running
+                    return;
+                }
+                ChatListenerCts = new CancellationTokenSource();
+                CurrentVideoId = videoId;
+                ChatListenerThread = new Thread(() => ChatListenerLoop(videoId, ChatListenerCts.Token))
+                {
+                    IsBackground = true
+                };
+                ChatListenerThread.Start();
+            }
+        }
+
+        // Stop the background chat listener thread
+        public void StopChatListener()
+        {
+            lock (ChatListenerLock)
+            {
+                if (ChatListenerCts != null)
+                {
+                    ChatListenerCts.Cancel();
+                }
+                if (ChatListenerThread != null && ChatListenerThread.IsAlive)
+                {
+                    ChatListenerThread.Join(2000); // Wait up to 2s
+                }
+                ChatListenerThread = null;
+                ChatListenerCts = null;
+            }
+        }
+
+        // The permanent background loop for receiving chat messages via gRPC
+        private void ChatListenerLoop(string videoId, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    RunGrpcChatStream(videoId, cancellationToken).GetAwaiter().GetResult();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    // Graceful exit
+                    LoggingService.Instance.Log($"Error in chat listener loop ${ex.Message}");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.Instance.Log($"ChatListenerLoop error: {ex.Message}");
+                    Debug.WriteLine($"ChatListenerLoop error: {ex}");
+                }
+                // Wait before reconnecting
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Thread.Sleep(3000);
+                }
+            }
+        }
+
+        // The gRPC chat stream logic, refactored for background use
+        private async Task RunGrpcChatStream(string videoId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(_liveChatId))
+            {
+                await SetLiveChatId(videoId);
+            }
+
+            LoggingService.Instance.Log("Starting gRPC chat stream loop.");
+            string address = "https://youtube.googleapis.com:443";
+            var googleOAuthService = new GoogleOAuthService();
+            var client = await googleOAuthService.CreateGrpcClient<V3DataLiveChatMessageServiceClient>(address);
+            string token = await googleOAuthService.GetAccessToken();
+
+            var callOptions = new CallOptions().WithHeaders(new Metadata { { "Authorization", $"Bearer {token}" } });
+            var request = new LiveChatMessageListRequest
+            {
+                LiveChatId = _liveChatId,
+                Part = { "snippet", "authorDetails" },
+                MaxResults = 20,
+                //PageToken = _lastPageToken
+            };
+
+            using (var call = client.StreamList(request, callOptions))
+            {
+                LoggingService.Instance.Log($"Connected to chat at ${DateTime.UtcNow}");
+                var responseStream = call.ResponseStream;
+                CurrencyConverter currencyConverter = new CurrencyConverter();
+                while (await responseStream.MoveNext(cancellationToken))
+                {
+                    var response = responseStream.Current;
+                    if (response != null && response.Items != null)
+                    {
+                        foreach (var message in response.Items)
+                        {
+                            var chatMessage = new ChatMessage
+                            {
+                                AuthorName = message.AuthorDetails.DisplayName,
+                                Message = message.Snippet.DisplayMessage,
+                                IsSuperChat = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.SuperChatEvent,
+                                IsChannelMembership = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.NewSponsorEvent || message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.MembershipGiftingEvent,
+                                IsSuperSticker = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.SuperStickerEvent,
+                                Amount = (double)(message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros / 1000000 : 0),
+                                DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
+                                USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency, (double)message.Snippet.SuperChatDetails?.AmountMicros / 1000000) : 0)
+                            };
+                            // Fire the event for each received message
+                            OnChatMessageReceived?.Invoke(chatMessage);
+                        }
+                    }
+                    _lastPageToken = response.NextPageToken;
+                    SaveState();
+                }
+            }
         }
 
         public async Task<List<ChatMessage>> GetNewLocalChatMessages() {

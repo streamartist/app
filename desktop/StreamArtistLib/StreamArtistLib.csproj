@@ -8,11 +8,25 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3764" />
+    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3296.44" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ObsWebSocket.Net" Version="2.0.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.6" />
     <PackageReference Include="Watson" Version="3.3.0" />
+
+	  
   </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Services\stream_list.proto" GrpcServices="Client">
+			<Link>Services\stream_list.proto</Link>
+		</Protobuf>
+	</ItemGroup>
 
 </Project>

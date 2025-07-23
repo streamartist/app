@@ -26,6 +26,7 @@ namespace StreamArtist.Services
         private bool sceneOverride = false;
         private const int SCENE_DURATION = 30000; // 30 seconds
         private bool joelSaysHiUsed = false;
+        private string currentVideoId = "";
 
 
         public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService)
@@ -38,6 +39,9 @@ namespace StreamArtist.Services
             sceneTimer.AutoReset = false;
 
             LoadScenesFromSettings();
+
+            // Subscribe to chat message event and process immediately
+            this.youTubeChatService.OnChatMessageReceived += ProcessChatMessage;
         }
 
         private void LoadScenesFromSettings()
@@ -65,13 +69,17 @@ namespace StreamArtist.Services
 
         public async Task Update()
         {
-            if (scenes == null || scenes.Count <= 1) // Need at least two scenes (default + one other)
+            // If you want to follow another stream.
+            string videoIdOverride = "";
+
+                
+            if (videoIdOverride == "" && (scenes == null || scenes.Count <= 1)) // Need at least two scenes (default + one other)
             {
                 LoggingService.Instance.Log("Not enough scenes configured. Check your settings.");
                 return;
             }
 
-            if (obsService == null) {
+            if (videoIdOverride == "" && obsService == null) {
                 LoggingService.Instance.Log("ObsService is null");
                 return;
             }
@@ -86,7 +94,7 @@ namespace StreamArtist.Services
             }
 
             var streams = await youTubeChatService.GetLiveStreams(channelId);
-            if (localMessages.Count == 0 && (streams == null || streams.Count == 0))
+            if (localMessages.Count == 0 && (streams == null || streams.Count == 0) && videoIdOverride=="")
             {
                 LoggingService.Instance.Log("No active live streams found.");
                 return;
@@ -95,33 +103,50 @@ namespace StreamArtist.Services
                 //LoggingService.Instance.Log("Looking at video " + streams[0].VideoId);
             }
 
-            List<ChatMessage> chats = null;
-            if (streams.Count > 0)
-            {
-                chats = await youTubeChatService.GetNewChatMessages(streams[0].VideoId);
-                chats.AddRange(localMessages);
-            } else { chats = localMessages; }
+            var videoId = (string.IsNullOrEmpty(videoIdOverride) ? streams[0].VideoId : videoIdOverride);
 
-            var liveTestChat = false;
-            if (chats.Count > 0)
+            if (string.IsNullOrEmpty(this.currentVideoId))
             {
+                currentVideoId = videoId;
+            } else if (this.currentVideoId != videoId)
+            {
+                youTubeChatService.StopChatListener();
+            }
+
+                // Idempontent
+                youTubeChatService.StartChatListener(videoId);
+        }
+
+        private void ProcessChatMessage(ChatMessage chat)
+        {
+            if (chat.Message == "joelsayshi" && !joelSaysHiUsed)
+            {
+                joelSaysHiUsed = true;
                 LoggingService.Instance.Log("Got chats");
-                foreach (var chat in chats)
+                LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
+                if (!sceneOverride && (chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership || chat.Message == "joelsayshi"))
                 {
-                    if (chat.Message == "joelsayshi" && !joelSaysHiUsed)
-                    {
-                        liveTestChat = true;
-                        joelSaysHiUsed = true;
-                    }
-                    LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
+                    sceneOverride = true;
+                    sceneTimer.Stop();
+                    SwitchToNextScene();
+                    sceneTimer.Start();
                 }
             }
-            if (!sceneOverride && chats != null && (liveTestChat || chats.Any(chat => (chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership))))
+            else if (chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership)
             {
-                sceneOverride = true;
-                sceneTimer.Stop();
-                SwitchToNextScene();
-                sceneTimer.Start();
+                LoggingService.Instance.Log("Got chats");
+                LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
+                if (!sceneOverride)
+                {
+                    sceneOverride = true;
+                    sceneTimer.Stop();
+                    SwitchToNextScene();
+                    sceneTimer.Start();
+                }
+            }
+            else
+            {
+                LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
             }
         }
 
