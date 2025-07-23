@@ -1,12 +1,13 @@
-using System;
-using System.Text.Json;
-using System.Web;
-using System.IO;
-using System.Collections.Generic;
 using StreamArtist.Domain;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Web;
 //using Microsoft.Maui.Storage;
 using WatsonWebserver;
-using System.Threading.Tasks;
 
 namespace StreamArtist.Services
 {
@@ -102,14 +103,34 @@ namespace StreamArtist.Services
             string file = p["file"];
             if (file == null)
             {
-                return "";
+                return "No file specified.";
             }
-            // TODO: fix
-            //using var stream = await FileSystem.OpenAppPackageFileAsync(file);
-            //using var reader = new StreamReader(stream);
-            //var contents = reader.ReadToEnd();
-            //return contents;
-            return "";
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            // Add this at the beginning of LoadEmbeddedHtml to debug
+            var names = assembly.GetManifestResourceNames();
+            //MessageBox.Show("Available Resources:\n" + string.Join("\n", names));
+
+            // Get the name of the embedded resource (adjust based on your project structure and file name)
+            // The format is typically: Namespace.Folder.FileName.Extension
+            string resourceName = "StreamArtistLib.Resources." + file;
+
+            
+            // Read the embedded resource as a stream
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    // Read the HTML content from the stream
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        string htmlContent = reader.ReadToEnd();
+                        return htmlContent;
+                    }
+                }
+            }
+            return $"{file} not found in {string.Join("<br/>", names)}";
         }
 
         static async Task SendVideo(HttpContext ctx)

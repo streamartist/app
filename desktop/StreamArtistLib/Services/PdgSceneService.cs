@@ -72,7 +72,11 @@ namespace StreamArtist.Services
             // If you want to follow another stream.
             string videoIdOverride = "";
 
-                
+#if DEBUG
+            videoIdOverride = "VRQKU7_LHAg";
+#endif
+
+
             if (videoIdOverride == "" && (scenes == null || scenes.Count <= 1)) // Need at least two scenes (default + one other)
             {
                 LoggingService.Instance.Log("Not enough scenes configured. Check your settings.");

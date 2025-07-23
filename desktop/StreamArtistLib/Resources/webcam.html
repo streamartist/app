@@ -1,0 +1,16 @@
+﻿<html>
+<body style="margin:0; padding:0; overflow:hidden;">
+<video id="webcam" autoplay playsinline style="width:100vw; height:100vh; object-fit:cover; position:fixed; top:0; left:0;"></video>
+<script>
+(async function() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById('webcam');
+        video.srcObject = stream;
+    } catch (err) {
+        document.body.innerHTML = '<div style="color:white;background:red;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;font-size:2em;">Webcam access denied or not available.</div>';
+    }
+})();
+</script>
+</body>
+</html>

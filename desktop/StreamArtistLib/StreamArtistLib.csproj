@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\webcam.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\webcam.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3764" />
     <PackageReference Include="Google.Protobuf" Version="3.31.1" />
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
