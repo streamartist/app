@@ -264,8 +264,12 @@ namespace StreamArtist.Services
                 LiveChatId = _liveChatId,
                 Part = { "snippet", "authorDetails" },
                 MaxResults = 20,
-                //PageToken = _lastPageToken
             };
+
+            if (!string.IsNullOrEmpty(_lastPageToken))
+            {
+                request.PageToken = _lastPageToken;
+            }
 
             using (var call = client.StreamList(request, callOptions))
             {

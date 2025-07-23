@@ -30,6 +30,7 @@ namespace StreamArtist.Controllers
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
         string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port"];
         string[] statusFieldNames = ["status-text", "control-server-status", "streaming-server-status", "control-server-security", "effects-server-status"];
+        bool docLoaded = false;
 
 
         // Add constructor
@@ -41,6 +42,10 @@ namespace StreamArtist.Controllers
 
         public void OnDocumentLoaded()
         {
+            // TODO: why is this loaded twice?
+            if (docLoaded) return;
+            docLoaded = true;
+
             SettingsController.LoadGoogleSignInStatus();
             WebServerService.StartLocalServer();
             LoggingService.Instance.Log("Starting log.");

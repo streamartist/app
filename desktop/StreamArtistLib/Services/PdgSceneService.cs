@@ -119,12 +119,13 @@ namespace StreamArtist.Services
 
         private void ProcessChatMessage(ChatMessage chat)
         {
+            var isPDG = chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership;
+            LoggingService.Instance.Log($"Chat => ${(isPDG ? "(PDG)" : "")} " + chat.AuthorName + ": " + chat.Message);
+
             if (chat.Message == "joelsayshi" && !joelSaysHiUsed)
             {
                 joelSaysHiUsed = true;
-                LoggingService.Instance.Log("Got chats");
-                LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
-                if (!sceneOverride && (chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership || chat.Message == "joelsayshi"))
+                if (!sceneOverride && (isPDG || chat.Message == "joelsayshi"))
                 {
                     sceneOverride = true;
                     sceneTimer.Stop();
@@ -132,10 +133,8 @@ namespace StreamArtist.Services
                     sceneTimer.Start();
                 }
             }
-            else if (chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership)
+            else if (isPDG)
             {
-                LoggingService.Instance.Log("Got chats");
-                LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
                 if (!sceneOverride)
                 {
                     sceneOverride = true;
@@ -143,10 +142,6 @@ namespace StreamArtist.Services
                     SwitchToNextScene();
                     sceneTimer.Start();
                 }
-            }
-            else
-            {
-                LoggingService.Instance.Log("Chat => " + chat.AuthorName + ": " + chat.Message);
             }
         }
 
