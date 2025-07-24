@@ -288,7 +288,9 @@ namespace StreamArtist.Services
                                 AuthorName = message.AuthorDetails.DisplayName,
                                 Message = message.Snippet.DisplayMessage,
                                 IsSuperChat = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.SuperChatEvent,
-                                IsChannelMembership = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.NewSponsorEvent || message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.MembershipGiftingEvent,
+                                IsChannelMembership = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.NewSponsorEvent || 
+                                                    message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.MembershipGiftingEvent ||
+                                                    message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.MemberMilestoneChatEvent,
                                 IsSuperSticker = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.SuperStickerEvent,
                                 Amount = (double)(message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros / 1000000 : 0),
                                 DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,

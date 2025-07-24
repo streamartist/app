@@ -73,7 +73,7 @@ namespace StreamArtist.Services
             string videoIdOverride = "";
 
 #if DEBUG
-            videoIdOverride = "VRQKU7_LHAg";
+            videoIdOverride = "jFstiv1LAIc";
 #endif
 
 
