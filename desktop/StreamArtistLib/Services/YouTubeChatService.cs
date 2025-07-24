@@ -298,6 +298,12 @@ namespace StreamArtist.Services
                             OnChatMessageReceived?.Invoke(chatMessage);
                         }
                     }
+                    var localMessages = LocalChatRepository.Instance.GetAndRemoveAllChats();
+                    foreach(var chat in localMessages)
+                    {
+                        OnChatMessageReceived?.Invoke(chat);
+                    }
+
                     _lastPageToken = response.NextPageToken;
                     SaveState();
                 }
