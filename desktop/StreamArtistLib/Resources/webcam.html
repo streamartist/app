@@ -2,15 +2,65 @@
 <body style="margin:0; padding:0; overflow:hidden;">
 <video id="webcam" autoplay playsinline style="width:100vw; height:100vh; object-fit:cover; position:fixed; top:0; left:0;"></video>
 <script>
+    function showError(message) {
+        document.body.innerHTML = `<div style="color:white;background:rgba(200,0,0,0.8);width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;font-size:1.5em;padding:1em;text-align:center;font-family:sans-serif;line-height:1.5;">${message}</div>`;
+        console.error(message);
+    }
+    showError("Load");
+    document.addEventListener('DOMContentLoaded', function () {
 (async function() {
+    
+
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        showError("start");
+
+        return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const webcamName = urlParams.get('webcam-name');
+
+        let constraints = { video: true };
+
+        if (webcamName) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+            if (videoDevices.length > 0 && videoDevices[0].label === '') {
+                // This happens if permissions haven't been granted yet. We can't select by name.
+                // We'll show an error and try to trigger the permission prompt.
+                showError('Webcam names are not available. Please grant camera permission to this source in OBS and then refresh it (e.g., by deactivating/reactivating it).');
+                await navigator.mediaDevices.getUserMedia(constraints); // This line is to trigger the prompt.
+                return;
+            }
+
+            const selectedDevice = videoDevices.find(device => device.label.indexOf(webcamName) > -1);
+
+            if (selectedDevice) {
+                constraints = { video: { deviceId: { exact: selectedDevice.deviceId } } };
+            } else {
+                const availableCams = videoDevices.map(d => `"${d.label}"`).join('<br>');
+                showError(`Error: Webcam "${webcamName}" not found.<br><br>Available webcams:<br>${availableCams || 'None'}`);
+                return;
+            }
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         const video = document.getElementById('webcam');
         video.srcObject = stream;
     } catch (err) {
-        document.body.innerHTML = '<div style="color:white;background:red;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;font-size:2em;">Webcam access denied or not available.</div>';
+        let errorText = 'Webcam access denied or not available.';
+        if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+            errorText = 'No webcam found.';
+        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            errorText = 'Webcam access was denied. Please grant permission in OBS for this browser source.';
+        } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+            const webcamName = new URLSearchParams(window.location.search).get('webcam-name');
+            errorText = `The webcam "${webcamName || 'default'}" could not be started. It might be in use by another application.`;
+        }
+        showError(errorText);
     }
 })();
+});
 </script>
 </body>
 </html>

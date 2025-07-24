@@ -37,6 +37,8 @@
 
         var flags = {/*flags*/ };
 
+        var webcams = {/*webcams*/ };
+
         function flagValue(id) {
             for (var i in flags) {
                 var flag = flags[i];
@@ -187,7 +189,29 @@
                 Style.innerHTML = '.ArEffectsEnabled {display:inherit }';
                 document.head.appendChild(Style);
             }
+        }
 
+        function updateObsLink() {
+            var webcamSelect = document.getElementById("webcam-select");
+            if (webcamSelect.options.length === 0) {
+                return;
+            }
+            var selectedWebcam = webcamSelect.value;
+            var obsLink = document.getElementById("obs-webcam-link");
+            var baseUrl = "http://localhost:42984/files?file=webcam.html&layer-name=StreamArtistWebCam&layer-width=1280&layer-height=720";
+            obsLink.href = baseUrl + '&webcam-name=' + encodeURIComponent(selectedWebcam);
+        }
+
+        function populateWebcamList() {
+            var webcamSelect = document.getElementById("webcam-select");
+            for (var i = 0; i < webcams.length; i++) {
+                var option = document.createElement("option");
+                option.text = webcams[i].Name;
+                webcamSelect.add(option);
+            }
+            if (webcams.length > 0) {
+                updateObsLink();
+            }
         }
 
     </script>
@@ -291,6 +315,8 @@
                     <br /><br />
                     <h4 class="mb-3 OverlayEffectsEnabled EffectsElements">Effects</h4>
                     <table class="OverlayEffectsEnabled EffectsElements">
+
+
                         <tr>
                             <td>Name</td>
                             <td><input type="text" id="effects-name" value="Joel" /></td>
@@ -312,9 +338,16 @@
                             </td>
                         </tr>
                         <tr>
+                            <td>Webcam</td>
+                            <td>
+                                <select id="webcam-select" onchange="updateObsLink()">
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
                             <td>
                                 <div class="">
-                                    <a href="http://localhost:42984/files?file=webcam.html&layer-name=StreamArtistWebCam&layer-width=1280&layer-height=720" class="w-100 btn btn-primary btn-sm" id="send-button">Drag me to OBS for WebCam</a>
+                                    <a onclick="return false" href="http://localhost:42984/files?file=webcam.html&layer-name=StreamArtistWebCam&layer-width=1280&layer-height=720" class="w-100 btn btn-primary btn-sm" id="obs-webcam-link">Drag me to OBS for WebCam</a>
                                 </div>
                             </td>
                         </tr>
@@ -1140,6 +1173,8 @@
             showTab("server-status");
             checkTos();
             showUI();
+            populateWebcamList();
+            
         });
 
     </script>

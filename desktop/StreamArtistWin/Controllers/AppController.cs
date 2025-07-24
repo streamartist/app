@@ -1,15 +1,18 @@
 // Controls the basic HTML view.
 
 
+using AForge.Video.DirectShow;
 using Microsoft.Web.WebView2.WinForms;
 using StreamArtist.Domain;
 using StreamArtist.Services;
+using StreamArtistLib.Services;
 using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
-using System.Xml.Linq;
 using System.Windows.Forms;
+using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Timer = System.Windows.Forms.Timer;
 
 namespace StreamArtist.Controllers
@@ -278,6 +281,9 @@ namespace StreamArtist.Controllers
 
         public async void LoadHtml()
         {
+
+            
+
             // Get the assembly containing the embedded resource
             Assembly assembly = Assembly.GetExecutingAssembly();
 
@@ -288,6 +294,7 @@ namespace StreamArtist.Controllers
             // Get the name of the embedded resource (adjust based on your project structure and file name)
             // The format is typically: Namespace.Folder.FileName.Extension
             string resourceName = "StreamArtist.Resources.Raw.index.html";
+            var osService = new OSService();
 
             // Read the embedded resource as a stream
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
@@ -300,8 +307,10 @@ namespace StreamArtist.Controllers
                         string htmlContent = reader.ReadToEnd();
 
                         var keys = JsonSerializer.Serialize(GetSettings());
+                        var webcams  = JsonSerializer.Serialize(osService.GetWebCams());
                         htmlContent = htmlContent.Replace("{/*fieldValues*/ }", keys);
                         htmlContent = htmlContent.Replace("{/*flags*/ }", JsonSerializer.Serialize(FlagService.GetFlags()));
+                        htmlContent = htmlContent.Replace("{/*webcams*/ }", webcams);
                         // Load the HTML content into the WebView2
                         MainView.NavigateToString(htmlContent);
                     }
