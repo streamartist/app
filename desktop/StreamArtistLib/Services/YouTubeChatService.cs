@@ -2,21 +2,22 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
+using Google.Protobuf;
 using Grpc.Core;
+using Grpc.Net.Client;
 using Newtonsoft.Json;
 using StreamArtist.Domain;
 using StreamArtist.Repositories;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using static Youtube.Api.V3.V3DataLiveChatMessageService;
-using Grpc.Net.Client;
-using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Youtube.Api.V3;
-using System.Diagnostics;
+using static Youtube.Api.V3.V3DataLiveChatMessageService;
 
 namespace StreamArtist.Services
 {
@@ -25,6 +26,7 @@ namespace StreamArtist.Services
         private readonly SettingsService _settingsService;
         private string _liveChatId;
         private string _lastPageToken;
+        private string _lastPageTokenPolling;
         private const string STATE_FILE = "youtube_chat_state.json";
 
         // Add event for new chat messages
@@ -132,7 +134,7 @@ namespace StreamArtist.Services
             var chatMessages = new List<ChatMessage>();
             LoggingService.Instance.Log("Calling chat per timer.");
             var request = youtubeService.LiveChatMessages.List(_liveChatId, "snippet,authorDetails");
-            request.PageToken = _lastPageToken;
+            request.PageToken = _lastPageTokenPolling;
 
             try
             {
@@ -148,14 +150,23 @@ namespace StreamArtist.Services
                     //{
                     //    LoggingService.Instance.Log(json);
                     //}
+
+                    string published="";
+                    try
+                    {
+                        published = message.Snippet.PublishedAtDateTimeOffset.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ss.fffzzz");
+                    } catch (Exception) { }
+
                     var obj = new ChatMessage
                     {
+                        Id = (message.Id != null ? message.Id : ""),
                         AuthorName = message.AuthorDetails.DisplayName,
                         Message = message.Snippet.DisplayMessage,
                         // Add memberMilestoneChatEvent 
                         IsSuperChat = message?.Snippet?.Type?.Contains("superChatEvent") == true,
                         IsChannelMembership = (message?.Snippet?.Type?.Contains("newSponsorEvent") == true || message?.Snippet?.Type?.Contains("membershipGiftingEvent") == true),
                         IsSuperSticker = message?.Snippet?.Type == "superStickerEvent",
+                        PublishedAt = published,
                         Amount = (double)(message.Snippet.SuperChatDetails != null ? message.Snippet.SuperChatDetails?.AmountMicros / 1000000 : 0),
                         DisplayAmount = message.Snippet.SuperChatDetails?.AmountDisplayString,
                         USDAmount = (message.Snippet.SuperChatDetails != null ? currencyConverter.GetUSD(message.Snippet.SuperChatDetails.Currency, (double)message.Snippet.SuperChatDetails?.AmountMicros / 1000000) : 0)
@@ -163,7 +174,7 @@ namespace StreamArtist.Services
                     chatMessages.Add(obj);
                 }
 
-                _lastPageToken = response.NextPageToken;
+                _lastPageTokenPolling = response.NextPageToken;
                 SaveState();
             }
             catch (Exception ex)
@@ -285,8 +296,10 @@ namespace StreamArtist.Services
                         {
                             var chatMessage = new ChatMessage
                             {
+                                Id = message.Id,
                                 AuthorName = message.AuthorDetails.DisplayName,
                                 Message = message.Snippet.DisplayMessage,
+                                PublishedAt = (message.Snippet.HasPublishedAt ? message.Snippet.PublishedAt : ""),
                                 IsSuperChat = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.SuperChatEvent,
                                 IsChannelMembership = message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.NewSponsorEvent || 
                                                     message?.Snippet?.Type == Youtube.Api.V3.LiveChatMessageSnippet.Types.TypeWrapper.Types.Type.MembershipGiftingEvent ||

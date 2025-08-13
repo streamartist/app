@@ -20,29 +20,58 @@ namespace StreamArtist.Services
         private readonly YouTubeChatService youTubeChatService;
         private readonly SettingsService settingsService;
         private Timer sceneTimer;
+        private Timer pollChatTimer;
         private List<string> scenes;
         private string defaultScene;
         private int currentSceneIndex = 0;
         private bool sceneOverride = false;
         private const int SCENE_DURATION = 30000; // 30 seconds
         private bool joelSaysHiUsed = false;
-        private string currentVideoId = "";
+        private string videoIdOverride = "";
+        // private string currentVideoId = "";
 
 
         public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService)
         {
+#if DEBUG
+            videoIdOverride = "LmpbcfAt9ko";
+#endif
+            this.CurrentVideoId = "";
             this.obsService = obsService;
             this.youTubeChatService = youTubeChatService;
             this.settingsService = settingsService;
+            
             sceneTimer = new Timer(SCENE_DURATION);
             sceneTimer.Elapsed += OnSceneTimerElapsed;
-            sceneTimer.AutoReset = false;
+            sceneTimer.AutoReset = true;
+
+            pollChatTimer = new Timer(1000);
+            pollChatTimer.Elapsed += PollChatTimer_Elapsed;
+            pollChatTimer.Enabled = true;
+            
 
             LoadScenesFromSettings();
 
             // Subscribe to chat message event and process immediately
             this.youTubeChatService.OnChatMessageReceived += ProcessChatMessage;
         }
+
+        private async void PollChatTimer_Elapsed(object? sender, ElapsedEventArgs e)
+        {
+            //var msgs = await youTubeChatService.GetNewChatMessages(videoIdOverride);
+            //pollChatTimer.Interval = youTubeChatService.PollingIntervalMillis;
+            //if (msgs != null)
+            //{
+            //    foreach (var chat in msgs)
+            //    {
+            //        LoggingService.Instance.Log($"<{chat.PublishedAt}> Polled Chat ({chat.Id}) => " + chat.AuthorName + ": ||||||||" + chat.Message);
+            //    }
+            //}
+
+        }
+
+        public string CurrentVideoId { get; set; }
+
 
         private void LoadScenesFromSettings()
         {
@@ -69,14 +98,6 @@ namespace StreamArtist.Services
 
         public async Task Update()
         {
-            // If you want to follow another stream.
-            string videoIdOverride = "";
-
-#if DEBUG
-            videoIdOverride = "jFstiv1LAIc";
-#endif
-
-
             if (videoIdOverride == "" && (scenes == null || scenes.Count <= 1)) // Need at least two scenes (default + one other)
             {
                 LoggingService.Instance.Log("Not enough scenes configured. Check your settings.");
@@ -109,22 +130,22 @@ namespace StreamArtist.Services
 
             var videoId = (string.IsNullOrEmpty(videoIdOverride) ? streams[0].VideoId : videoIdOverride);
 
-            if (string.IsNullOrEmpty(this.currentVideoId))
+            if (string.IsNullOrEmpty(this.CurrentVideoId))
             {
-                currentVideoId = videoId;
-            } else if (this.currentVideoId != videoId)
+                CurrentVideoId = videoId;
+            } else if (this.CurrentVideoId != videoId)
             {
                 youTubeChatService.StopChatListener();
             }
 
-                // Idempontent
-                youTubeChatService.StartChatListener(videoId);
+            // Idempontent
+            youTubeChatService.StartChatListener(videoId);
         }
 
         private void ProcessChatMessage(ChatMessage chat)
         {
             var isPDG = chat.IsSuperChat || chat.IsSuperSticker || chat.IsChannelMembership;
-            LoggingService.Instance.Log($"Chat => ${(isPDG ? "(PDG)" : "")} " + chat.AuthorName + ": " + chat.Message);
+            LoggingService.Instance.Log($"<{chat.PublishedAt}> Chat ({chat.Id}) => ${(isPDG ? "(PDG)" : "")} " + chat.AuthorName + ": ||||||||" + chat.Message);
 
             if (chat.Message == "joelsayshi" && !joelSaysHiUsed)
             {

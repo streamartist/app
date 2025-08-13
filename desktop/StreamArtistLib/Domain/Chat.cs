@@ -1,5 +1,6 @@
 public class ChatMessage
     {
+        public string Id { get; set; }
         public string AuthorName { get; set; }
         public string Message { get; set; }
         public bool IsSuperChat { get; set; }
@@ -8,6 +9,7 @@ public class ChatMessage
         public double Amount { get; set; }
         public double USDAmount { get; set; }
         public string DisplayAmount { get; set; }
+        public string PublishedAt { get; set; }
     }
 
     public class ChatState

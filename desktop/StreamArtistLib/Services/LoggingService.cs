@@ -48,7 +48,7 @@ namespace StreamArtist.Services
                     string fileName = $"{DateTime.Now:yyyy-MM-dd}.log";
                     string fullPath = Path.Combine(_logDirectory, fileName);
 
-                    string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
+                    string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}";
 
                     File.AppendAllText(fullPath, logEntry + Environment.NewLine);
                 }
