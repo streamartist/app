@@ -30,7 +30,7 @@
             checkTos();
         });
 
-        var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account", "obs-port", "obs-password", "obs-scenes"];
+        var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account", "obs-port", "obs-password", "obs-scenes","test-video-id"];
         // Note the space after the comment. File formatter
         // wants this.
         var fieldValues = {/*fieldValues*/ };
@@ -378,6 +378,16 @@
                             </div>
                             <div class="col-sm-12 ">
                                 <div>
+                                    <label for="test-video-id" class="form-label">Test Video Id</label>
+                                    <input type="text" class="form-control" id="test-video-id" placeholder="" value="" required=""
+                                           onblur="save()">
+                                    <div class="invalid-feedback">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 ">
+                                <div>
                                     <label for="obs-port" class="form-label">OBS WebSocket Port</label>
                                     <input type="text" class="form-control" id="obs-port" placeholder="" value="" required=""
                                            onblur="save()">
@@ -475,7 +485,7 @@
 
 
                             <!-- <a href="javascript:void" class="w-100 btn btn-primary btn-lg" onclick="save();">Save</a> -->
-                    </form>
+</form>
                 </div>
             </div>
             <div class="col-md-7 col-lg-8" id="tos">

@@ -31,10 +31,10 @@ namespace StreamArtist.Services
         // private string currentVideoId = "";
 
 
-        public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService)
+        public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService, string testVideoId)
         {
 #if DEBUG
-            videoIdOverride = "LmpbcfAt9ko";
+            videoIdOverride = testVideoId; //"jnkZFwIps2Y";
 #endif
             this.CurrentVideoId = "";
             this.obsService = obsService;
@@ -58,15 +58,15 @@ namespace StreamArtist.Services
 
         private async void PollChatTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            //var msgs = await youTubeChatService.GetNewChatMessages(videoIdOverride);
-            //pollChatTimer.Interval = youTubeChatService.PollingIntervalMillis;
-            //if (msgs != null)
-            //{
-            //    foreach (var chat in msgs)
-            //    {
-            //        LoggingService.Instance.Log($"<{chat.PublishedAt}> Polled Chat ({chat.Id}) => " + chat.AuthorName + ": ||||||||" + chat.Message);
-            //    }
-            //}
+            var msgs = await youTubeChatService.GetNewChatMessages(videoIdOverride);
+            pollChatTimer.Interval = youTubeChatService.PollingIntervalMillis;
+            if (msgs != null)
+            {
+                foreach (var chat in msgs)
+                {
+                    LoggingService.Instance.Log($"<{chat.PublishedAt}> Polled Chat ({chat.Id}) => " + chat.AuthorName + ": ||||||||" + chat.Message);
+                }
+            }
 
         }
 
@@ -83,7 +83,8 @@ namespace StreamArtist.Services
                 if (scenes.Count > 0)
                 {
                     defaultScene = scenes[0];
-                    obsService.Connect();
+                    // ************************************************************************************************************************************************************************
+                    //obsService.Connect();
                 }
                 else
                 {
@@ -176,13 +177,15 @@ namespace StreamArtist.Services
             if (currentSceneIndex == 0) { currentSceneIndex = 1; }
             var nextScene = scenes[currentSceneIndex];
             LoggingService.Instance.Log($"Switching to scene: {nextScene}");
-            obsService.SwitchScene(nextScene);
+            // ************************************************************************************************************************************************************************
+            //obsService.SwitchScene(nextScene);
         }
 
         private void OnSceneTimerElapsed(object sender, ElapsedEventArgs e)
         {
             sceneOverride = false;
-            obsService.SwitchScene(defaultScene);
+            // ************************************************************************************************************************************************************************
+            //obsService.SwitchScene(defaultScene);
         }
     }
     }

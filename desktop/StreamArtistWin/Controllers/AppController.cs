@@ -31,7 +31,7 @@ namespace StreamArtist.Controllers
         private Timer _timer;
 
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
-        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port"];
+        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port", "test-video-id"];
         string[] statusFieldNames = ["status-text", "control-server-status", "streaming-server-status", "control-server-security", "effects-server-status"];
         bool docLoaded = false;
 
@@ -57,7 +57,7 @@ namespace StreamArtist.Controllers
             if (int.TryParse(settings["obs-port"], out int port))
             {
                 var obsService = new OBSService(port, settings["obs-password"]);
-                _pdgSceneService = new PdgSceneService(obsService, youTubeChatService, _settingsService);
+                _pdgSceneService = new PdgSceneService(obsService, youTubeChatService, _settingsService, settings["test-video-id"]);
             }
             else
             {

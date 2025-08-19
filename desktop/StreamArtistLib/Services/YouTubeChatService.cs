@@ -199,6 +199,7 @@ namespace StreamArtist.Services
                     // Already running
                     return;
                 }
+                LoggingService.Instance.Log("Starting chat listener thread");
                 ChatListenerCts = new CancellationTokenSource();
                 CurrentVideoId = videoId;
                 ChatListenerThread = new Thread(() => ChatListenerLoop(videoId, ChatListenerCts.Token))
@@ -250,7 +251,8 @@ namespace StreamArtist.Services
                 // Wait before reconnecting
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    Thread.Sleep(3000);
+                    LoggingService.Instance.Log("Resetting chat connection");
+                    Thread.Sleep(10);
                 }
             }
         }
