@@ -31,7 +31,7 @@ namespace StreamArtist.Controllers
         private Timer _timer;
 
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
-        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port", "test-video-id"];
+        string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port", "test-video-id", "google-auth-client-id", "auth-url"];
         string[] statusFieldNames = ["status-text", "control-server-status", "streaming-server-status", "control-server-security", "effects-server-status"];
         bool docLoaded = false;
 
@@ -260,9 +260,15 @@ namespace StreamArtist.Controllers
 
         public void OnStart()
         {
-            GoogleOAuthService service = new GoogleOAuthService();
-            var accessToken = service.GetAccessToken();
-            Console.WriteLine("Access token: " + accessToken);
+            try
+            {
+                GoogleOAuthService service = new GoogleOAuthService();
+                var accessToken = service.GetAccessToken();
+                Console.WriteLine("Access token: " + accessToken);
+            }
+            catch(Exception ex)  {
+                LoggingService.Instance.Log($"Couldn't login to YouTube {ex.Message}");
+            }
 
             //post("start");
         }

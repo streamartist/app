@@ -122,17 +122,30 @@ namespace StreamArtist.Services
 
         public async Task<List<ChatMessage>> GetNewChatMessages(string videoId)
         {
-            // TODO: what is this for?
-            if (string.IsNullOrEmpty(_liveChatId))
+            YouTubeService youtubeService;
+            var chatMessages = new List<ChatMessage>();
+
+
+            try
             {
-                await SetLiveChatId(videoId);
+                // TODO: what is this for?
+                if (string.IsNullOrEmpty(_liveChatId))
+                {
+                    await SetLiveChatId(videoId);
+                }
+
+                //LoadState();
+
+                 youtubeService = await InitializeYouTubeService();
+                LoggingService.Instance.Log("Calling chat per timer.");
+                
+            }catch(Exception ex)
+            {
+                // TODO: Fix end user error handling.
+                LoggingService.Instance.Log($"Couldn't login to YouTube: {ex.Message}");
+                return chatMessages;
             }
 
-            //LoadState();
-
-            var youtubeService = await InitializeYouTubeService();
-            var chatMessages = new List<ChatMessage>();
-            LoggingService.Instance.Log("Calling chat per timer.");
             var request = youtubeService.LiveChatMessages.List(_liveChatId, "snippet,authorDetails");
             request.PageToken = _lastPageTokenPolling;
 

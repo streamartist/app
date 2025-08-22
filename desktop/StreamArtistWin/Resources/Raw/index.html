@@ -30,7 +30,7 @@
             checkTos();
         });
 
-        var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account", "obs-port", "obs-password", "obs-scenes","test-video-id"];
+        var fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "shorts-streamkey", "shorts-filter", "youtube-account", "obs-port", "obs-password", "obs-scenes", "test-video-id", "google-auth-client-id", "auth-url"];
         // Note the space after the comment. File formatter
         // wants this.
         var fieldValues = {/*fieldValues*/ };
@@ -374,6 +374,22 @@
                                             onclick="connectYouTube()">
                                         Connect
                                     </button>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label for="google-auth-client-id" class="form-label">Google Auth Client ID</label>
+                                <input type="text" class="form-control" id="google-auth-client-id" placeholder="" value="" required=""
+                                       onblur="save()">
+                                <div class="invalid-feedback">
+                                    Google Auth Client ID required.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label for="auth-url" class="form-label">Authentication URL</label>
+                                <input type="text" class="form-control" id="auth-url" placeholder="" value="" required=""
+                                       onblur="save()">
+                                <div class="invalid-feedback">
+                                    Authentication URL required.
                                 </div>
                             </div>
                             <div class="col-sm-12 ">

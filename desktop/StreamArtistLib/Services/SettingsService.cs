@@ -7,7 +7,7 @@ namespace StreamArtist.Services
     public class SettingsService
     {
         // TODO: rename cloudstream-streamkey to streamartist-streamkey
-        private readonly string[] _fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter","obs-port","obs-password","obs-scenes","test-video-id"];
+        private readonly string[] _fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter","obs-port","obs-password","obs-scenes","test-video-id","google-auth-client-id", "auth-url"];
         private readonly Repositories.Settings _settings = new Repositories.Settings();
 
         public Dictionary<string, string> GetSettings()
@@ -36,6 +36,11 @@ namespace StreamArtist.Services
             {
                 _settings.SetSecureValue(id, dict[id]);
             }
+        }
+
+        public string GetSetting(string id)
+        {
+            return _settings.GetSecureStorageValueSync(id);
         }
 
 

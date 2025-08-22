@@ -16,7 +16,10 @@ namespace StreamArtist.Services
 
     public class GoogleOAuthService
     {
-        private const string ClientId = "761671456404-3uguov085qn482k6q9ol9ngf8fiiub16.apps.googleusercontent.com";
+        private string ClientId = string.Empty;
+        // This is a server auth function that keeps the client secret more secret.
+        // You don't need it if you're using a local secret.
+        private string AuthUrl = string.Empty;
         private const int Port = 42983;
         private readonly string RedirectUri = $"http://localhost:{Port}/";
         private const string Scope = "https://www.googleapis.com/auth/youtube";
@@ -26,6 +29,18 @@ namespace StreamArtist.Services
 
         // Add this event declaration
         public event EventHandler? AuthComplete;
+
+        private readonly SettingsService _settingsService;
+        private readonly HttpClient _httpClient;
+
+        public GoogleOAuthService()
+        {
+            _settingsService = new SettingsService();
+            _httpClient = new HttpClient();
+            
+            ClientId = _settingsService.GetSetting("google-auth-client-id");
+            AuthUrl = _settingsService.GetSetting("auth-url");
+        }
 
         public async Task AuthenticateAsync()
         {
@@ -111,15 +126,6 @@ namespace StreamArtist.Services
             return await RefreshAccessTokenAsync();
         }
 
-        private readonly SettingsService _settingsService;
-        private readonly HttpClient _httpClient;
-
-        public GoogleOAuthService()
-        {
-            _settingsService = new SettingsService();
-            _httpClient = new HttpClient();
-        }
-
         private async Task<string> RefreshAccessTokenAsync()
         {
             string RefreshToken = _settingsService.GetGoogleRefreshToken();
@@ -166,7 +172,7 @@ namespace StreamArtist.Services
             }
             else
             {
-                var Response = await _httpClient.PostAsync("https://us-central1-cloud-stream-431915.cloudfunctions.net/artist-connect", Content);
+                var Response = await _httpClient.PostAsync(this.AuthUrl, Content);
                 ResponseString = await Response.Content.ReadAsStringAsync();
             }
 
@@ -174,8 +180,9 @@ namespace StreamArtist.Services
 
             if (jsonDocument.RootElement.TryGetProperty("error", out var Error))
             {
-                Console.WriteLine($"Couldn't get access token: {Error.GetString()}");
-                throw new GoogleAccessTokenException(Error.GetString());
+                LoggingService.Instance.Log($"Couldn't get access token: {Error.GetString()}");
+                // TODO: Clean up user error handling.
+                //throw new GoogleAccessTokenException(Error.GetString());
             }
 
             var ExpiryInSeconds = jsonDocument.RootElement.GetProperty("expires_in").GetInt32();
