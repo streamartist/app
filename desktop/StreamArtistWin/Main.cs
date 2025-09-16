@@ -47,13 +47,13 @@ namespace StreamArtist
 
             MainView.NavigationStarting += MainView_NavigationStarting;
             MainView.NavigationCompleted += MainView_NavigationCompleted;
-            _appController = new AppController(MainView);
+            _appController = new AppController(MainView,this);
             _appController.LoadHtml();
 
 
         }
 
- 
+
 
         private void MainView_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
         {
@@ -63,12 +63,12 @@ namespace StreamArtist
         private void MainView_NavigationStarting(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs e)
         {
             _appController.OnWebViewEvent(sender, e);
-            
+
         }
 
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
 
-
-
-        
+        }
     }
 }

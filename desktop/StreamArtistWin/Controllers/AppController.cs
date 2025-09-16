@@ -20,6 +20,7 @@ namespace StreamArtist.Controllers
     public class AppController
     {
         internal WebView2 MainView;
+        private Form _mainForm;
         public SettingsController SettingsController;
         public WebServerService WebServerService = new WebServerService();
         private readonly NetworkService _networkService = new NetworkService();
@@ -37,9 +38,10 @@ namespace StreamArtist.Controllers
 
 
         // Add constructor
-        public AppController(WebView2 webView)
+        public AppController(WebView2 webView, Form mainForm)
         {
             MainView = webView;
+            _mainForm = mainForm;
             SettingsController = new SettingsController(this);
         }
 
@@ -48,6 +50,9 @@ namespace StreamArtist.Controllers
             // TODO: why is this loaded twice?
             if (docLoaded) return;
             docLoaded = true;
+
+            LoggingService.Instance.OnLogMessage += OnLogMessageReceived;
+            UpdateLogOutput();
 
             SettingsController.LoadGoogleSignInStatus();
             WebServerService.StartLocalServer();
@@ -243,7 +248,7 @@ namespace StreamArtist.Controllers
 
             if (code.Contains("\\n") || code.Contains("\n"))
             {
-                throw new Exception("Can't have newlines in javascript");
+                //throw new Exception("Can't have newlines in javascript");
             }
             Debug.WriteLine($"JS => {code}");
             return MainView.ExecuteScriptAsync(code);
@@ -272,6 +277,26 @@ namespace StreamArtist.Controllers
             }
 
             //post("start");
+        }
+
+        private void OnLogMessageReceived(string message)
+        {
+            UpdateLogOutput();
+        }
+
+        private void UpdateLogOutput()
+        {
+            if (_mainForm is Main mainForm && mainForm.txtLogs != null)
+            {
+                var logBufferForTextBox = LoggingService.Instance.LogBuffer;
+                var logContentForTextBox = string.Join(Environment.NewLine, logBufferForTextBox);
+                // Use Invoke to safely update the UI from any thread
+                mainForm.Invoke((System.Windows.Forms.MethodInvoker)delegate {
+                    mainForm.txtLogs.Text = logContentForTextBox;
+                    mainForm.txtLogs.SelectionStart = mainForm.txtLogs.Text.Length;
+                    mainForm.txtLogs.ScrollToCaret();
+                });
+            }
         }
 
         public void OnSave(String values)

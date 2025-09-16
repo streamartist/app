@@ -43,7 +43,7 @@ namespace StreamArtist
 
             if (ex?.Message.Contains("obs", StringComparison.CurrentCultureIgnoreCase)==true && ex?.Message.Contains("json", StringComparison.CurrentCultureIgnoreCase)==true)
             {
-                MessageBox.Show("OBS lib suffered unknown failure. Might be ok to continue.");
+                LoggingService.Instance.Log("OBS lib suffered unknown failure. Might be ok to continue.");
             }
             else
             {
