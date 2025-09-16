@@ -35,6 +35,7 @@ namespace StreamArtist.Controllers
         string[] fieldIds = ["server-address", "youtube-streamkey", "twitch-streamkey", "cloudstream-streamkey", "tos", "shorts-streamkey", "shorts-filter", "obs-password", "obs-port", "test-video-id", "google-auth-client-id", "auth-url"];
         string[] statusFieldNames = ["status-text", "control-server-status", "streaming-server-status", "control-server-security", "effects-server-status"];
         bool docLoaded = false;
+        private int numMessages = 0;
 
 
         // Add constructor
@@ -63,10 +64,13 @@ namespace StreamArtist.Controllers
             {
                 var obsService = new OBSService(port, settings["obs-password"]);
                 _pdgSceneService = new PdgSceneService(obsService, youTubeChatService, _settingsService, settings["test-video-id"]);
+                youTubeChatService.OnChatMessageReceived += YouTubeChatService_OnChatMessageReceived;
             }
             else
             {
-                Debug.WriteLine("OBS port not configured or invalid.");
+                var e = "OBS port not configured or invalid.";
+                SetObsLabel(e);
+                LoggingService.Instance.Log(e);
             }
 
             _timer = new Timer();
@@ -76,6 +80,27 @@ namespace StreamArtist.Controllers
             TimerTickEvent(this, new EventArgs());
         }
 
+        private void SetObsLabel(string label)
+        {
+            if (_mainForm is Main mainForm && mainForm.lblObs != null)
+            {
+                mainForm.Invoke((System.Windows.Forms.MethodInvoker)delegate {
+                    mainForm.lblObs.Text = label;
+                });
+            }
+        }
+
+        private void YouTubeChatService_OnChatMessageReceived(ChatMessage obj)
+        {
+            numMessages++;
+            if (_mainForm is Main mainForm && mainForm.lblChatStatus != null)
+            {
+                mainForm.Invoke((System.Windows.Forms.MethodInvoker)delegate {
+                    mainForm.lblChatStatus.Text = "Chats: " + numMessages;
+                });
+            }
+
+        }
 
         private async void TimerTickEvent(object source, EventArgs e)
         {
