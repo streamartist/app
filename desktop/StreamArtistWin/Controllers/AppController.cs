@@ -64,6 +64,7 @@ namespace StreamArtist.Controllers
             {
                 var obsService = new OBSService(port, settings["obs-password"]);
                 _pdgSceneService = new PdgSceneService(obsService, youTubeChatService, _settingsService, settings["test-video-id"]);
+                _pdgSceneService.OnSceneSwitch += _pdgSceneService_OnSceneSwitch;
                 youTubeChatService.OnChatMessageReceived += YouTubeChatService_OnChatMessageReceived;
             }
             else
@@ -78,6 +79,18 @@ namespace StreamArtist.Controllers
             _timer.Interval = 10000;
             _timer.Enabled = true;
             TimerTickEvent(this, new EventArgs());
+        }
+
+        private void _pdgSceneService_OnSceneSwitch(string arg1, Exception arg2)
+        {
+            if (arg1 != null)
+            {
+                SetObsLabel($"OBS: Switching scene to {arg1}");
+            }
+            if (arg2 != null)
+            {
+                SetObsLabel("OBS: Error switching scenes in OBS. See logs.");
+            }
         }
 
         private void SetObsLabel(string label)

@@ -30,6 +30,8 @@ namespace StreamArtist.Services
         private string videoIdOverride = "";
         // private string currentVideoId = "";
 
+        public event Action<string, Exception> OnSceneSwitch;
+
 
         public PdgSceneService(OBSService obsService, YouTubeChatService youTubeChatService, SettingsService settingsService, string testVideoId)
         {
@@ -179,11 +181,21 @@ namespace StreamArtist.Services
 
         private void SwitchToNextScene()
         {
-            currentSceneIndex = (currentSceneIndex + 1) % (scenes.Count - 1);
-            if (currentSceneIndex == 0) { currentSceneIndex = 1; }
-            var nextScene = scenes[currentSceneIndex];
-            LoggingService.Instance.Log($"Switching to scene: {nextScene}");
-            obsService.SwitchScene(nextScene);
+            string nextScene = null;
+            try
+            {
+                currentSceneIndex = (currentSceneIndex + 1) % (scenes.Count - 1);
+                if (currentSceneIndex == 0) { currentSceneIndex = 1; }
+                nextScene = scenes[currentSceneIndex];
+                LoggingService.Instance.Log($"Switching to scene: {nextScene}");
+                obsService.SwitchScene(nextScene);
+                OnSceneSwitch?.Invoke(nextScene, null);
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Instance.Log($"Failed to switch scene to {nextScene ?? "unknown"}: {ex.Message}");
+                OnSceneSwitch?.Invoke(nextScene, ex);
+            }
         }
 
         private void OnSceneTimerElapsed(object sender, ElapsedEventArgs e)

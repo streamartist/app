@@ -44,6 +44,7 @@ namespace StreamArtist.Services
         private void Obs_OnConnectionFailed(Exception exception)
         {
             LoggingService.Instance.Log(exception.ToString());
+            
         }
 
         public void Connect()
@@ -57,6 +58,7 @@ namespace StreamArtist.Services
             catch (Exception ex)
             {
                 LoggingService.Instance.Log($"Failed to connect to OBS: {ex.Message}");
+                throw;
             }
         }
 
@@ -72,6 +74,7 @@ namespace StreamArtist.Services
             catch (Exception ex)
             {
                 LoggingService.Instance.Log($"Failed to switch scene to {sceneName}: {ex.Message}");
+                throw;
             }
         }
 
