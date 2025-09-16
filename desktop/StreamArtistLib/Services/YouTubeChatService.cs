@@ -18,6 +18,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Youtube.Api.V3;
 using static Youtube.Api.V3.V3DataLiveChatMessageService;
+using LiveChatMessage = Google.Apis.YouTube.v3.Data.LiveChatMessage;
+using LiveChatMessageSnippet = Google.Apis.YouTube.v3.Data.LiveChatMessageSnippet;
+using LiveChatTextMessageDetails = Google.Apis.YouTube.v3.Data.LiveChatTextMessageDetails;
+
 
 namespace StreamArtist.Services
 {
@@ -42,6 +46,8 @@ namespace StreamArtist.Services
             // Set default value, as per the documentation.
             PollingIntervalMillis = 1000;
         }
+
+        public string LiveChatId { get { return _liveChatId; } }
 
         public long PollingIntervalMillis { get; set; }
 
@@ -118,7 +124,27 @@ namespace StreamArtist.Services
             }
         }
 
-
+        public async Task SendMessage(string chatId, string message)
+        {
+            // try
+            // {
+                var youtubeService = await InitializeYouTubeService();
+                var liveChatMessage = new LiveChatMessage()
+                {
+                    Snippet = new LiveChatMessageSnippet()
+                    {
+                        LiveChatId = chatId,
+                        Type = "textMessageEvent",
+                        TextMessageDetails = new LiveChatTextMessageDetails() { MessageText = message }
+                    }
+                };
+                await youtubeService.LiveChatMessages.Insert(liveChatMessage, "snippet").ExecuteAsync();
+            // }
+            // catch (Exception ex)
+            // {
+            //     LoggingService.Instance.Log($"Error sending YouTube chat message: {ex.Message}");
+            // }
+        }
 
         public async Task<List<ChatMessage>> GetNewChatMessages(string videoId)
         {
@@ -376,6 +402,7 @@ namespace StreamArtist.Services
             {
                 var videoResponse = await videoRequest.ExecuteAsync();
                 _liveChatId = videoResponse.Items[0].LiveStreamingDetails.ActiveLiveChatId;
+                LoggingService.Instance.Log($"Chat id is {_liveChatId}");
             }
             catch (Exception ex)
             {

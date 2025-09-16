@@ -68,6 +68,7 @@ namespace StreamArtist.Controllers
             _timer.Tick += TimerTickEvent;
             _timer.Interval = 10000;
             _timer.Enabled = true;
+            TimerTickEvent(this, new EventArgs());
         }
 
 

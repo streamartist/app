@@ -45,10 +45,11 @@ namespace StreamArtist.Services
             sceneTimer.Elapsed += OnSceneTimerElapsed;
             sceneTimer.AutoReset = true;
 
-            pollChatTimer = new Timer(1000);
+            pollChatTimer = new Timer(1);
             pollChatTimer.Elapsed += PollChatTimer_Elapsed;
-            pollChatTimer.Enabled = true;
-            
+            // ********************
+            // Enable if you want to bench stuff or get polled chats.
+            pollChatTimer.Enabled = false;
 
             LoadScenesFromSettings();
 
@@ -58,15 +59,21 @@ namespace StreamArtist.Services
 
         private async void PollChatTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            var msgs = await youTubeChatService.GetNewChatMessages(videoIdOverride);
-            pollChatTimer.Interval = youTubeChatService.PollingIntervalMillis;
-            if (msgs != null)
-            {
-                foreach (var chat in msgs)
-                {
-                    LoggingService.Instance.Log($"<{chat.PublishedAt}> Polled Chat ({chat.Id}) => " + chat.AuthorName + ": ||||||||" + chat.Message);
-                }
-            }
+            
+            // Uncomment if you also want to get polled chats.
+
+            //var msgs = await youTubeChatService.GetNewChatMessages(videoIdOverride);
+            //pollChatTimer.Interval = youTubeChatService.PollingIntervalMillis;
+            //if (msgs != null)
+            //{
+            //    foreach (var chat in msgs)
+            //    {
+            //        LoggingService.Instance.Log($"<{chat.PublishedAt}> Polled Chat ({chat.Id}) => " + chat.AuthorName + ": ||||||||" + chat.Message);
+            //    }
+            //}
+            //var testMessage = Guid.NewGuid().ToString();
+            //LoggingService.Instance.Log($"Test message {testMessage}");
+            //youTubeChatService.SendMessage(youTubeChatService.LiveChatId, testMessage);
 
         }
 
@@ -83,8 +90,7 @@ namespace StreamArtist.Services
                 if (scenes.Count > 0)
                 {
                     defaultScene = scenes[0];
-                    // ************************************************************************************************************************************************************************
-                    //obsService.Connect();
+                    obsService.Connect();
                 }
                 else
                 {
@@ -177,15 +183,13 @@ namespace StreamArtist.Services
             if (currentSceneIndex == 0) { currentSceneIndex = 1; }
             var nextScene = scenes[currentSceneIndex];
             LoggingService.Instance.Log($"Switching to scene: {nextScene}");
-            // ************************************************************************************************************************************************************************
-            //obsService.SwitchScene(nextScene);
+            obsService.SwitchScene(nextScene);
         }
 
         private void OnSceneTimerElapsed(object sender, ElapsedEventArgs e)
         {
             sceneOverride = false;
-            // ************************************************************************************************************************************************************************
-            //obsService.SwitchScene(defaultScene);
+            obsService.SwitchScene(defaultScene);
         }
     }
     }
