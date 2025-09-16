@@ -49,6 +49,7 @@ namespace StreamArtist.Services
 
         private async Task Serve(HttpContext context)
         {
+            // Note: webcam is at http://localhost:42984/files?file=webcam.html.
             Console.WriteLine("Requested: " + context.Request.RawUrlWithQuery);
             if (context.Request.RawUrlWithoutQuery.StartsWith("/update"))
             {
